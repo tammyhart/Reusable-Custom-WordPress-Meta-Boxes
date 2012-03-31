@@ -1,16 +1,24 @@
-=== Reusable Custom WordPress Meta Boxes ===
+Reusable Custom WordPress Meta Boxes
+====================================
 
-Contributors: tammyhart
-Original Tutorial Series: http://wp.tutsplus.com/author/tammy/
+Contributors: [tammyhart](http://github.com/tammyhart)
+Original Tutorial Series: (http://wp.tutsplus.com/author/tammy/)
 
 
-== Description ==
+Description
+-----------
 
-This project was originally a tutorial for WPTuts+, but as I continued to use the code in my own projects, I kep improving it and making the resusable part even better. Rather than update the tutorial, I decided to make it an open source project here where developers can keep up with imrpovements as well as contribute their own.
+This project was originally a tutorial for WPTuts+, but as I continued to use the code in my own 
+projects, I kept improving it and making the resusable part even better. Rather than update the 
+tutorial, I decided to make it an open source project here where developers can keep up with 
+improvements as well as contribute their own.
 
-This project creates a series of functions that make it easy to create a custom meta box for any post type using a master switch case for the meta box and fields HTML and an array containing the data for the fields you want to use.
+This project creates a series of functions that make it easy to create a custom meta box for any 
+post type using a master switch case for the meta box and fields HTML and an array containing 
+the data for the fields you want to use.
 
-= Fields Included =
+
+### Fields Included
 
 * Text Input
 * Textarea
@@ -26,7 +34,8 @@ This project creates a series of functions that make it easy to create a custom 
 * Repeatable & Sortable Text inputs
 
 
-== Usage ==
+Usage
+-----
 
 These files are written from the perspecitve of being used in a theme. 
 
@@ -35,11 +44,12 @@ These files are written from the perspecitve of being used in a theme.
 4. Use the functions created in meta_box.php to add meta boxes to any post type (see Examples section below)
 
 
-== Examples ==
+Examples
+--------
 
-= A sample meta box that uses all of the field types for the "post" post type =
+### A sample meta box that uses all of the field types for the "post" post type
 
-function thd_sample_meta_box_fields() {
+`function thd_sample_meta_box_fields() {
 	$prefix = 'sample_';
 
 	$fields = array(
@@ -193,12 +203,12 @@ function thd_sample_save_data($post_id) {
 add_action( 'admin_menu' , 'thd_re_remove_towndiv' );
 function thd_sample_remove_towndiv() {
 	remove_meta_box('towndiv', 'post', 'side');
-}
+}`
 
 
-= Add listing information to a Real Estate post type "real-estate" =
+### Add listing information to a Real Estate post type "real-estate"
 
-function thd_re_meta_box_fields() {
+`function thd_re_meta_box_fields() {
 	$prefix = 're_';
 
 	$fields = array(
@@ -301,10 +311,10 @@ function thd_re_listing_save_data($post_id) {
 add_action( 'admin_menu' , 'thd_re_remove_towndiv' );
 function thd_re_remove_towndiv() {
 	remove_meta_box('towndiv', 'real-estate', 'side');
-}
+}`
 
 
-== Changelog ==
+### Changelog
 
 = 0.1 (March 31, 2012) =
 * First release
