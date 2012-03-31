@@ -2,6 +2,7 @@ Reusable Custom WordPress Meta Boxes
 ====================================
 
 Contributors: [tammyhart](http://github.com/tammyhart)
+
 Original Tutorial Series: (http://wp.tutsplus.com/author/tammy/)
 
 
