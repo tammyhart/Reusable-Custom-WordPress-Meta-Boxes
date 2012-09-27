@@ -22,6 +22,10 @@ class custom_add_meta_box {
 		$this->page = $page;
 		$this->js = $js;
 		
+		if(!is_array($this->page)) {
+			$this->page = array($this->page);
+		}
+		
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'admin_head',  array( $this, 'admin_head' ) );
 		add_action( 'admin_menu', array( $this, 'add_box' ) );
@@ -46,8 +50,8 @@ class custom_add_meta_box {
 	function admin_head() {
 		global $post, $post_type;
 		
-		if ( $post_type == $this->page && $this->js == true ) : 
-		
+		if (in_array($post_type, $this->page) && $this->js == true ) { 
+
 			echo '<script type="text/javascript">
 						jQuery(function() {';
 			
@@ -76,18 +80,19 @@ class custom_add_meta_box {
 			
 			echo '});
 				</script>';
-		
-		endif;
+		};
 	}
 	
 	function add_box() {
-		add_meta_box( $this->id, $this->title, array( $this, 'meta_box_callback' ), $this->page, 'normal', 'high');
+		foreach ($this->page as $page) {
+			add_meta_box( $this->id, $this->title, array( $this, 'meta_box_callback' ), $page, 'normal', 'high');
+		}
 	}
 	
 	function meta_box_callback() {
-		global $post;
+		global $post, $post_type;
 		// Use nonce for verification
-		echo '<input type="hidden" name="' . $this->page . '_meta_box_nonce" value="' . wp_create_nonce( basename( __FILE__) ) . '" />';
+		echo '<input type="hidden" name="' . $post_type . '_meta_box_nonce" value="' . wp_create_nonce( basename( __FILE__) ) . '" />';
 		
 		// Begin the field table and loop
 		echo '<table class="form-table meta_box">';
@@ -151,7 +156,7 @@ class custom_add_meta_box {
 							foreach ( $terms as $term ) 
 									echo '<option value="' . $term->slug . '"' . selected( $selected[0]->slug, $term->slug, false ) . '>' . $term->name . '</option>'; 
 							$taxonomy = get_taxonomy( $id);
-							echo '</select> &nbsp;<span class="description"><a href="' . get_bloginfo( 'url' ) . '/wp-admin/edit-tags.php?taxonomy=' . $id . '&post_type=' . $this->page . '">Manage ' . $taxonomy->label . '</a></span>
+							echo '</select> &nbsp;<span class="description"><a href="' . get_bloginfo( 'url' ) . '/wp-admin/edit-tags.php?taxonomy=' . $id . '&post_type=' . $post_type . '">Manage ' . $taxonomy->label . '</a></span>
 								<br />' . $desc;
 						break;
 						// post_list
@@ -220,7 +225,7 @@ class custom_add_meta_box {
 		global $post, $post_type;
 		
 		// verify nonce
-		if ( ! ( $post_type == $this->page && @wp_verify_nonce( $_POST[$this->page . '_meta_box_nonce'],  basename( __FILE__ ) ) ) )
+		if ( ! ( in_array($post_type, $this->page) && @wp_verify_nonce( $_POST[$post_type . '_meta_box_nonce'],  basename( __FILE__ ) ) ) )
 			return $post_id;
 		// check autosave
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
