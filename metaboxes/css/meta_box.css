@@ -1,6 +1,10 @@
 /* 
  * Meta box styles
  */
+.form-table.meta_box h2 {
+	border-bottom:1px dashed #ccc;
+}
+
 .form-table.meta_box th label {
 	font-weight:bold;
 }
@@ -10,3 +14,194 @@
 	color:#777;
 	font-style:italic;
 }
+
+.form-table.meta_box .meta_box_items {
+	margin:0;
+	padding:0;
+}
+
+	.form-table.meta_box .meta_box_items li {
+		display:inline-block;
+		width:20%;
+		min-width:100px;
+	}
+
+/* repeatable */
+.form-table.meta_box .meta_box_repeatable {
+	width:510px;
+}
+.form-table.meta_box .meta_box_repeatable th {
+	width:auto !important;
+	padding:5px 10px;
+	border-bottom:1px dashed #ccc;
+	text-transform:uppercase;
+	font-size:10px;
+	text-shadow:none;
+}
+
+.form-table.meta_box .meta_box_repeatable tfoot th {
+	border-bottom:none;
+}
+	
+.form-table.meta_box .meta_box_repeatable td {
+	width:auto !important;
+	vertical-align:top;
+	padding:10px;
+	border-bottom:1px dashed #ccc;
+	background:#eee;
+}
+
+.form-table.meta_box .meta_box_repeatable tr:nth-child(even) td {
+	background:none;
+}
+
+	.form-table.meta_box .meta_box_repeatable td * {
+		display:block;
+		margin-bottom:3px;
+	}
+	
+		.form-table.meta_box .meta_box_repeatable td .meta_box_upload_image_button,
+		.form-table.meta_box .meta_box_repeatable td small,
+		.form-table.meta_box .meta_box_repeatable td small a {
+			display:inline;
+		}
+		
+	.form-table.meta_box .meta_box_repeatable td label {
+		display:block;
+		float:left;
+		width:100px;
+		font-weight:bold;
+		line-height:30px;
+		clear:left;
+	}
+	
+	.form-table.meta_box .meta_box_repeatable td p {
+		margin:0;
+		float:left;
+		padding-bottom:5px;
+	}
+	
+	.form-table.meta_box .meta_box_repeatable td textarea {
+		width: 300px;
+	}
+
+	.form-table.meta_box .meta_box_repeatable .repeatable_id {
+		background:#ccc;
+		width:30px;
+		text-align:center;
+	}
+
+.meta_box_repeatable .sort_label {
+	display:block;
+	width:20px;
+	height:17px;
+	background:url(../images/sprite.png) no-repeat -68px -100px;
+}
+
+.meta_box_repeatable .sort {
+	display:block;
+	width:20px;
+	height:15px;
+	background:url(../images/sprite.png) 0 -100px;
+	margin-top:6px;
+	cursor:move;
+}
+
+.meta_box_repeatable_add, 
+.meta_box_repeatable_remove {
+	display:block;
+	width:18px;
+	height:16px;
+	background:url(../images/sprite.png);
+	margin-top:5px;
+}
+
+.meta_box_repeatable_add {
+	background-position:-30px -100px;
+}
+
+.meta_box_repeatable_remove {
+	background-position:-50px -100px;
+}
+	
+.meta_box_repeatable tr:first-child .meta_box_repeatable_remove,
+.meta_box_repeatable tr:first-child > td > .sort {
+	display:none;
+}
+
+/* image */
+.meta_box_preview_image {
+	max-width:200px;
+	max-height:200px;
+	display:block;
+	margin-bottom:3px;
+}
+
+/* file */
+.meta_box_file {
+	display:block;
+	width:37px;
+	height:48px;
+	background:url(../images/sprite.png) 0 0;
+	float:left;
+	margin-right:15px;
+}
+
+	.meta_box_file.checked {
+		background-position:-50px 0;
+	}
+	
+	.meta_box_filename {
+		margin-bottom:5px;
+		display:block;
+		font-weight:bold;
+	}
+
+/* Select */
+.form-table select {
+	width:25em;
+}
+
+/* post_drop_sort */
+.post_drop_sort_areas,
+.post_drop_sort_source {
+	width:250px;
+	margin-right:20px;
+	float:left;
+}
+
+	.post_drop_sort_areas ul,
+	.post_drop_sort_source {
+		border-radius:5px;
+		border:3px dashed #ccc;
+		margin:0 0 10px;
+		padding:5px 10px 10px;
+	}
+
+.post_drop_sort_source {
+	width:224px;
+	background:#ccc;
+	border:none;
+}
+
+.sort_list li {
+	padding:5px 10px;
+	cursor:move;
+	background:#fff;
+	margin:5px 0 0;
+	text-align:center;
+}
+
+.sort_list li.post_drop_sort_area_name {
+	font-weight:bold;
+	border-bottom:1px dashed #ccc;
+	color:#999;
+	background:none;
+	margin:0 0 10px;
+	padding:5px 0;
+}
+
+	.post_drop_sort_source.sort_list li.post_drop_sort_area_name {
+		color:#fff;
+		border-color:#fff;
+	}

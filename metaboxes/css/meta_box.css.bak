@@ -1,0 +1,12 @@
+/* 
+ * Meta box styles
+ */
+.form-table.meta_box th label {
+	font-weight:bold;
+}
+
+.form-table.meta_box .description {
+	font-size:11px;
+	color:#777;
+	font-style:italic;
+}

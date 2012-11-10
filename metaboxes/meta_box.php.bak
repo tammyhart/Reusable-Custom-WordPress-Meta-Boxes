@@ -82,8 +82,8 @@ class Custom_Add_Meta_Box {
 		$this->page = $page;
 		$this->js = $js;
 		
-		if( ! is_array( $this->page ) ) {
-			$this->page = array( $this->page );
+		if(!is_array($this->page)) {
+			$this->page = array($this->page);
 		}
 		
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
@@ -94,7 +94,7 @@ class Custom_Add_Meta_Box {
 	
 	function admin_enqueue_scripts() {
 		global $pagenow;
-		if ( in_array( $pagenow, array( 'post-new.php', 'post.php' ) ) && in_array( get_post_type(), $this->page ) ) {
+		if ( in_array( $pagenow, array( 'post-new.php', 'post.php' ) ) && get_post_type() == $this->page ) {
 			// js
 			$deps = array( 'jquery' );
 			if ( meta_box_find_field_type( 'date', $this->fields ) )
@@ -125,7 +125,7 @@ class Custom_Add_Meta_Box {
 	function admin_head() {
 		global $post, $post_type;
 		
-		if ( in_array( get_post_type(), $this->page ) && $this->js == true ) : 
+		if ( ( in_array($post_type, $this->page) || $post_type == $this->page ) && $this->js == true ) : 
 		
 			echo '<script type="text/javascript">
 						jQuery(function($) {';
@@ -160,7 +160,7 @@ class Custom_Add_Meta_Box {
 	}
 	
 	function add_box() {
-		foreach ( $this->page as $page ) {
+		foreach ($this->page as $page) {
 			add_meta_box( $this->id, $this->title, array( $this, 'meta_box_callback' ), $page, 'normal', 'high');
 		}
 	}
@@ -168,7 +168,7 @@ class Custom_Add_Meta_Box {
 	function meta_box_callback() {
 		global $post;
 		// Use nonce for verification
-		wp_nonce_field( 'custom_meta_box_nonce_action', 'custom_meta_box_nonce_field' );
+		wp_nonce_field( $this->page . '_meta_box_nonce_action', $this->page . '_meta_box_nonce_field' );
 		
 		// Begin the field table and loop
 		echo '<table class="form-table meta_box">';
@@ -460,13 +460,13 @@ class Custom_Add_Meta_Box {
 		$post_type = get_post_type();
 		
 		// verify nonce
-		if ( ! ( in_array( $post_type, $this->page ) || isset( $_POST['custom_meta_box_nonce_field'] ) || wp_verify_nonce( $_POST['custom_meta_box_nonce_field'],  'custom_meta_box_nonce_action' ) ) ) 
+		if ( !in_array($post_type, $this->page) || !$post_type == $this->page || !isset( $_POST[$this->page . '_meta_box_nonce_field'] ) || !wp_verify_nonce( $_POST[$this->page . '_meta_box_nonce_field'],  $this->page . '_meta_box_nonce_action' ) ) 
 			return $post_id;
 		// check autosave
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
 			return $post_id;
 		// check permissions
-		if ( ! current_user_can( 'edit_page', $post_id ) )
+		if ( !current_user_can( 'edit_page', $post_id ) )
 			return $post_id;
 		
 		// loop through fields and save the data

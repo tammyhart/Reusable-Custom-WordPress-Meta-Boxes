@@ -36,6 +36,10 @@ the data for the fields you want to use.
 * Image ID field
 * Repeatable & Sortable Text inputs
 
+### Notes
+
+Not all fields are covered yet in the included example, and yes I know my documentation isn't that great. Contributions are welcome!!
+
 
 Usage
 -----
@@ -84,6 +88,13 @@ Examples
 
 Changelog
 ---------
+
+### 0.3 (November 10, 2012)
+* Added file field
+* Added function to simplify the add file and add image thickbox
+* added more fields to the Repeatable
+* Added "chosen" and "multiple" options to select fields
+* Added "post_drop" field
 
 ### 0.2 (September 11, 2012)
 * Functions combined into a class
