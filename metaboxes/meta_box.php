@@ -190,7 +190,7 @@ class Custom_Add_Meta_Box {
 					
 				// get sanitized value of this field
 				$sanitizer = isset( $sanitizer ) ? $sanitizer : 'sanitize_text_field';
-				$meta = livepress_meta_field( $id );
+				$meta = get_post_meta( $post->ID, $id, true );
 				if ( is_array( $meta ) )
 					$meta = meta_box_array_map_r( 'meta_box_sanitize', $meta, $sanitizer );
 				else
