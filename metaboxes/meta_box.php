@@ -54,16 +54,20 @@ function meta_box_sanitize( $string, $function = 'sanitize_text_field' ) {
 }
 
 // for sanitizing arrays
-function meta_box_array_map_r( $func, $meta, $sanitizer )
-{
+function meta_box_array_map_r( $func, $meta, $sanitizer ) {
 		
     $newMeta = array();
 	
 	foreach( $meta as $key => $array ) {
+		// some values are stored as array, we only want multidimensional ones
+		if ( ! is_array( $array ) ) {
+			return array_map( $func, $meta, $sanitizer );
+			break;
+		}
 		$array = array_map( $func, $array, $sanitizer );
-		$newMeta[$key] = array_combine( array_keys( $sanitizer), array_values( $array ) );
+		$newMeta[$key] = array_combine( array_keys( $sanitizer ), array_values( $array ) );
 	}
-        
+    
     return $newMeta;
 }
 
@@ -107,6 +111,7 @@ class Custom_Add_Meta_Box {
 				wp_register_script( 'chosen', get_template_directory_uri() . '/metaboxes/js/chosen.js', array( 'jquery' ) );
 				$deps[] = 'chosen';
 				wp_enqueue_style( 'chosen', get_template_directory_uri() . '/metaboxes/css/chosen.css' );
+				wp_enqueue_script( 'jquery-sonar', get_template_directory_uri() . '/metaboxes/js/jquery.sonar.min.js' );
 			}
 			if ( meta_box_find_field_type( 'image', $this->fields ) || meta_box_find_field_type( 'repeatable', $this->fields ) || meta_box_find_field_type( 'post_drop_sort', $this->fields ) || meta_box_find_field_type( 'chosen', $this->fields ) || meta_box_find_field_type( 'post_chosen', $this->fields ) )
 				wp_enqueue_script( 'meta_box', get_template_directory_uri() . '/metaboxes/js/scripts.js', $deps );
@@ -128,7 +133,7 @@ class Custom_Add_Meta_Box {
 		if ( in_array( get_post_type(), $this->page ) && $this->js == true ) : 
 		
 			echo '<script type="text/javascript">
-						jQuery(function($) {';
+						jQuery(function( $) {';
 			
 			foreach ( $this->fields as $field ) {
 				// date
@@ -161,7 +166,7 @@ class Custom_Add_Meta_Box {
 	
 	function add_box() {
 		foreach ( $this->page as $page ) {
-			add_meta_box( $this->id, $this->title, array( $this, 'meta_box_callback' ), $page, 'normal', 'high');
+			add_meta_box( $this->id, $this->title, array( $this, 'meta_box_callback' ), $page, 'normal', 'high' );
 		}
 	}
 	
@@ -268,22 +273,19 @@ class Custom_Add_Meta_Box {
 							// post_select, post_chosen
 							case 'post_select':
 							case 'post_chosen':
-								if ( isset( $multiple ) && $multiple == true )
-									echo '<select data-placeholder="Select One" name="' . esc_attr( $id ) . '[]" id="' . esc_attr( $id ) . '"' , $type == 'post_chosen' ? ' class="chosen"' : '' , ' multiple="multiple">';
-								else
-									echo '<select data-placeholder="Select One" name="' . esc_attr( $id ) . '" id="' . esc_attr( $id ) . '"' , $type == 'post_chosen' ? ' class="chosen"' : '' , '>';
-								echo '<option value=""></option>'; // Select One
+								echo '<select data-placeholder="Select One" name="' . esc_attr( $id ) . '[]" id="' . esc_attr( $id ) . '"' , $type == 'post_chosen' ? ' class="chosen"' : '' , isset( $multiple ) && $multiple == true ? ' multiple="multiple"' : '' , '>
+										<option value=""></option>'; // Select One
 								$posts = get_posts( array( 'post_type' => $post_type, 'posts_per_page' => -1, 'orderby' => 'name', 'order' => 'ASC' ) );
-								foreach ( $posts as $item ) {
-									$selected = is_array( $meta ) ? selected( in_array( $item->ID, $meta ), true, false ) : selected( $item->ID, $meta, false );
-									echo '<option value="' . $item->ID . '"' . $selected . '>' . $item->post_title . '</option>';
-								}
+								if ( $post_type == 'tcnmy-participant' ) usort( $posts, 'tcnmy_cmp_title' );
+								foreach ( $posts as $item )
+									echo '<option value="' . $item->ID . '"' . selected( in_array( $item->ID, $meta ), true, false ) . '>' . $item->post_title . '</option>';
 								$post_type_object = get_post_type_object( $post_type );
 								echo '</select> &nbsp;<span class="description"><a href="' . admin_url( 'edit.php?post_type=' . $post_type . '">Manage ' . $post_type_object->label ) . '</a></span><br />' . $desc;
 							break;
 							// post_checkboxes
 							case 'post_checkboxes':
 								$posts = get_posts( array( 'post_type' => $post_type, 'posts_per_page' => -1 ) );
+								usort( $posts, 'tcnmy_cmp_title' );
 								echo '<ul class="meta_box_items">';
 								foreach ( $posts as $item ) 
 									echo '<li><input type="checkbox" value="' . $item->ID . '" name="' . esc_attr( $id ) . '[]" id="' . esc_attr( $id ) . '-' . $item->ID . '"' , is_array( $meta ) && in_array( $item->ID, $meta ) ? ' checked="checked"' : '' , ' />
@@ -297,7 +299,7 @@ class Custom_Add_Meta_Box {
 								$post_type_object = get_post_type_object( $post_type );
                                 echo '<p>' . $desc . ' &nbsp;<span class="description"><a href="' . admin_url( 'edit.php?post_type=' . $post_type . '">Manage ' . $post_type_object->label ) . '</a></span></p><div class="post_drop_sort_areas">';
 								foreach ( $areas as $area ) {
-                                	echo '<ul id="area-' . $area['id'] .'" class="sort_list">
+                                	echo '<ul id="area-' . $area['id']  . '" class="sort_list">
 											<li class="post_drop_sort_area_name">' . $area['label'] . '</li>';
 											if ( is_array( $meta ) ) {
 												$items = explode( ',', $meta[$area['id']] );
@@ -326,6 +328,29 @@ class Custom_Add_Meta_Box {
                                 	echo '<li id="' . $item->ID . '">' . $output . '</li>';
 								}
                                 echo '</ul>';
+							break;
+							// tax_select
+							case 'tax_select':
+								echo '<select name="' . esc_attr( $id ) . '" id="' . esc_attr( $id ) . '">
+										<option value="">Select One</option>'; // Select One
+								$terms = get_terms( $id, 'get=all' );
+								$post_terms = wp_get_object_terms( $post->ID, $id );
+								$selected= $post_terms ? $terms[0]->slug : null;
+								foreach ( $terms as $term )
+									echo '<option value="' . $term->slug . '"' . selected( $selected, $term->slug, false ) . '>' . $term->name . '</option>'; 
+								$taxonomy = get_taxonomy( $id );
+								echo '</select> &nbsp;<span class="description"><a href="'.get_bloginfo( 'url' ) . '/wp-admin/edit-tags.php?taxonomy=' . $id . '">Manage ' . $taxonomy->label . '</a></span>
+									<br />' . $desc;
+							break;
+							// tax_checkboxes
+							case 'tax_checkboxes':
+								$terms = get_terms( $id, 'get=all' );
+								$post_terms = wp_get_object_terms( $post->ID, $id );
+								$checked = $post_terms ? $terms[0]->slug : null;
+								foreach ( $terms as $term)
+									echo '<input type="checkbox" value="' . $term->slug . '" name="' . $id . '[]" id="' . $term->slug . '"' . checked( $checked, $term->slug, false ) . ' /> <label for="' . $term->slug . '">' . $term->name . '</label><br />';
+								$taxonomy = get_taxonomy( $id);
+								echo '<span class="description">' . $field['desc'] . ' <a href="'.get_bloginfo( 'url' ) . '/wp-admin/edit-tags.php?taxonomy=' . $id . '&post_type=' . $page . '">Manage ' . $taxonomy->label . '</a></span>';
 							break;
 							// date
 							case 'date':
@@ -379,7 +404,7 @@ class Custom_Add_Meta_Box {
 									<tbody>';
 								$i = 0;
 								// create an empty array
-								if ( $meta == '' ) {
+								if ( $meta == '' || $meta == array() ) {
 									$keys = wp_list_pluck( $repeatable_fields, 'repeatable_id' );
 									$meta = array ( array_fill_keys( $keys, null ) );
 								}
@@ -389,25 +414,25 @@ class Custom_Add_Meta_Box {
 											<td><span class="sort hndle"></span></td><td>';
 									foreach ( $repeatable_fields as $repeatable_field ) {
 										extract( $repeatable_field );
-										echo '<label>' . $repeatable_label .'</label><p>';
+										echo '<label>' . $repeatable_label  . '</label><p>';
 										switch ( $repeatable_type ) {
 											// checkbox
 											case 'checkbox':
 												$checked = isset( $meta[$i][$repeatable_id] ) ? $meta[$i][$repeatable_id] : '';
-												echo '<p><input type="checkbox" name="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id .']" id="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id .']" value="1"' . checked( $checked, $repeatable_id, false ) . ' style="display:inline;" /> <label style="display:inline;" for="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id .']">' . $repeatable_label .'</label></p>';
+												echo '<p><input type="checkbox" name="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id  . ']" id="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id  . ']" value="' . $repeatable_id . '"' . checked( $checked, $repeatable_id, false ) . ' style="display:inline;" /></p>';
 											break;
 											// radio
 											case 'radio':
 												$checked = isset( $meta[$i][$repeatable_id] ) ? $meta[$i][$repeatable_id] : '';
-												echo '<p><input type="radio" name="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id .']" id="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id .']" value="' . $repeatable_id . '"' . checked( $checked, $repeatable_id, false ) . ' style="margin-top:7px" /></p>';
+												echo '<p><input type="radio" name="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id  . ']" id="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id  . ']" value="' . $repeatable_id . '"' . checked( $checked, $repeatable_id, false ) . ' style="margin-top:7px" /></p>';
 											break;
 											// text
 											case 'text':
-												echo '<input type="text" name="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id .']" value="' . $meta[$i][$repeatable_id] . '" size="30" class="regular-text" placeholder="' . $repeatable_label .'" />';
+												echo '<input type="text" name="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id  . ']" value="' . $meta[$i][$repeatable_id] . '" size="30" class="regular-text" placeholder="' . $repeatable_label  . '" />';
 											break;
 											// textarea
 											case 'textarea':
-												echo '<textarea name="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id .']" cols="30" rows="4" placeholder="' . $repeatable_label .'">' . $meta[$i][$repeatable_id] . '</textarea>';
+												echo '<textarea name="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id  . ']" cols="30" rows="4" placeholder="' . $repeatable_label  . '">' . $meta[$i][$repeatable_id] . '</textarea>';
 											break;
 											// image
 											case 'image':
@@ -420,7 +445,7 @@ class Custom_Add_Meta_Box {
 													$image = $image[0];
 												}
 											}				
-											echo	'<input name="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id .']" type="hidden" class="meta_box_upload_image" value="' . intval( $meta[$i][$repeatable_id] ) . '" />
+											echo	'<input name="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id  . ']" type="hidden" class="meta_box_upload_image" value="' . intval( $meta[$i][$repeatable_id] ) . '" />
 														<img src="' . $image . '" class="meta_box_preview_image" alt="" />
 															<input class="meta_box_upload_image_button button" type="button" rel="' . $post->ID . '" value="Choose Image" />
 															<small>&nbsp; <a href="#" class="meta_box_clear_image_button">Remove Image</a></small>
@@ -428,7 +453,7 @@ class Custom_Add_Meta_Box {
 											break;
 											// unique id
 											case 'id':
-												echo '<input type="hidden" name="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id .']" value="' , $meta[$i][$repeatable_id] != '' ? $meta[$i][$repeatable_id] : substr( ereg_replace("[^0-9]", "", uniqid() ), 3, 2 ) , '" size="5" class="repeatable_id" readonly="readonly" />';
+												echo '<input type="hidden" name="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id  . ']" value="' , $meta[$i][$repeatable_id] != '' ? $meta[$i][$repeatable_id] : substr( ereg_replace("[^0-9]", "", uniqid() ), 3, 2 ) , '" size="5" class="repeatable_id" readonly="readonly" />';
 											break;
 										} // end switch
 										echo '</p>';
@@ -475,7 +500,7 @@ class Custom_Add_Meta_Box {
 				$sanitizer = null;
 				continue;
 			}
-			if( $field['type'] == 'tax_select' ) {
+			if( in_array( $field['type'], array( 'tax_select', 'tax_checkboxes' ) ) ) {
 				// save taxonomies
 				if ( isset( $_POST[$field['id']] ) )
 					$term = $_POST[$field['id']];
@@ -499,73 +524,4 @@ class Custom_Add_Meta_Box {
 			}
 		} // end foreach
 	}
-}
-
-/**
- * simplify featured image
- */
-add_action( 'admin_head-media-upload-popup', 'tcnmy_thickbox_head' );
-function tcnmy_thickbox_head() {
-	// generally hide the post thumbnail selection link
-	if ( ! isset( $_GET['type'] ) || !in_array( $_GET['type'], array( 'file', 'image' ) ) ) :
-		?>
-		<style type="text/css">
-			tr.submit .wp-post-thumbnail {
-				display: none;
-			}
-		</style>
-		<?php
-	// hide those links and a bunch of other things
-	else :
-		?>
-		<style type="text/css">
-			#media-upload-header #sidemenu li#tab-type_url,
-			#gallery-settings,
-			#gallery-form table.widefat thead,
-			#gallery-form .menu_order,
-			#sort-buttons,
-			.ml-submit,
-			tr.url,
-			tr.align,
-			tr.image_alt,
-			tr.image-size,
-			tr.post_title,
-			tr.post_content,
-			tr.image_alt p,
-			table thead input.button,
-			table thead img.imgedit-wait-spin {
-				display: none !important;
-			}
-			#media-upload a.wp-post-thumbnail {
-				margin-left:0;
-			}
-			.media-item td.savesend {
-				padding:10px;
-			}
-			tr.post_excerpt.not-featured {
-				display:none !important;
-			}
-		</style>
-		<script type="text/javascript">
-		jQuery(document).ready(function($){
-			$('#media-items').bind('DOMNodeInserted',function(){
-				<?php
-				if( !isset( $_REQUEST['custom'] ) )
-					echo "$('input[value=\"Insert into Post\"]').hide();
-						$('a.wp-post-thumbnail').html('Use This Image').addClass('button');";
-				elseif( $_REQUEST['custom'] == 'simple' )
-					echo "$('input[value=\"Insert into Post\"]').val('Use This Image');
-						$('a.wp-post-thumbnail').hide();
-						$('tr.post_excerpt').addClass('not-featured');";
-				elseif( $_REQUEST['custom'] == 'file' )
-					echo "$('input[value=\"Insert into Post\"]').val('Use This File');
-						$('a.wp-post-thumbnail').hide();
-						$('tr.post_excerpt').addClass('not-featured');";
-				?>
-			}).trigger('DOMNodeInserted');
-		});
-		</script>
-		<?php
-		wp_enqueue_script('thickbox');
-	endif;
 }
