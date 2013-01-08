@@ -1,76 +1,8 @@
 <?php
 
-// finds any item in any level of an array
-function meta_box_find_field_type( $needle, $haystack ) {
-    foreach ( $haystack as $item )
-        if ( $item['type'] == $needle )
-            return true;
-    return false;
-}
-
-// sanitize boolean inputs
-function meta_box_santitize_boolean( $string ) {
-	if ( ! isset( $string ) || $string != 1 )
-		return false;
-	else
-		return true;
-}
-
-// outputs properly sanitized data
-function meta_box_sanitize( $string, $function = 'sanitize_text_field' ) {
-	switch ( $function ) {
-		case 'intval':
-			return intval( $string );
-		case 'absint':
-			return absint( $string );
-		case 'wp_kses_post':
-			return wp_kses_post( $string );
-		case 'wp_kses_data':
-			return wp_kses_data( $string );
-		case 'wp_rel_nofollow':
-			return wp_rel_nofollow( $string );
-		case 'esc_html':
-			return esc_html( $string );
-		case 'esc_textarea':
-			return esc_textarea( $string );
-		case 'esc_attr':
-			return esc_attr( $string );
-		case 'esc_url':
-			return esc_url( $string );
-		case 'esc_url_raw':
-			return esc_url_raw( $string );
-		case 'urlencode':
-			return urlencode( $string );
-		case 'urlencode_deep':
-			return urlencode_deep( $string );
-		case 'sanitize_title':
-			return sanitize_title( $string );
-		case 'santitize_boolean':
-			return santitize_boolean( $string );
-		case 'sanitize_text_field':
-		default:
-			return sanitize_text_field( $string );
-	}
-}
-
-// for sanitizing arrays
-function meta_box_array_map_r( $func, $meta, $sanitizer ) {
-		
-    $newMeta = array();
-	
-	foreach( $meta as $key => $array ) {
-		// some values are stored as array, we only want multidimensional ones
-		if ( ! is_array( $array ) ) {
-			return array_map( $func, $meta, $sanitizer );
-			break;
-		}
-		$array = array_map( $func, $array, $sanitizer );
-		$newMeta[$key] = array_combine( array_keys( $sanitizer ), array_values( $array ) );
-	}
-    
-    return $newMeta;
-}
-
+/**
+ * takes in a few peices of data and creates a custom meta box
+ */
 class Custom_Add_Meta_Box {
 	
 	var $id; // string meta box id
@@ -524,4 +456,115 @@ class Custom_Add_Meta_Box {
 			}
 		} // end foreach
 	}
+	
+	// Helper Functions ------------------------------------------------
+	
+	
+	/**
+	 * Finds any item in any level of an array
+	 *
+	 * @param	string	$needle 	field type to look for
+	 * @param	array	$haystack	an array to search the type in
+	 *
+	 * @return	bool				whether or not the type is in the provided array
+	 */
+	function meta_box_find_field_type( $needle, $haystack ) {
+		foreach ( $haystack as $h )
+			if ( isset( $h['type'] ) && $h['type']	 == 'repeatable' )
+				return meta_box_find_field_type( $needle, $h['repeatable_fields'] );
+			elseif ( ( isset( $h['type'] ) && $h['type'] == $needle ) || ( isset( $h['repeatable_type'] ) && $h['repeatable_type'] == $needle ) )
+				return true;
+		return false;
+	}
+	
+	/**
+	 * sanitize boolean inputs
+	 */
+	function meta_box_santitize_boolean( $string ) {
+		if ( ! isset( $string ) || $string != 1 || $string != true )
+			return false;
+		else
+			return true;
+	}
+	
+	/**
+	 * outputs properly sanitized data
+	 *
+	 * @param	string	$string		the string to run through a validation function
+	 * @param	string	$function	the validation function
+	 *
+	 * @return						a validated string
+	 */
+	function meta_box_sanitize( $string, $function = 'sanitize_text_field' ) {
+		switch ( $function ) {
+			case 'intval':
+				return intval( $string );
+			case 'absint':
+				return absint( $string );
+			case 'wp_kses_post':
+				return wp_kses_post( $string );
+			case 'wp_kses_data':
+				return wp_kses_data( $string );
+			case 'esc_url_raw':
+				return esc_url_raw( $string );
+			case 'is_email':
+				return is_email( $string );
+			case 'sanitize_title':
+				return sanitize_title( $string );
+			case 'santitize_boolean':
+				return santitize_boolean( $string );
+			case 'sanitize_text_field':
+			default:
+				return sanitize_text_field( $string );
+		}
+	}
+
+	/**
+	 * Map a multideminsional array
+	 *
+	 * @param	string	$func		the function to map
+	 * @param	array	$meta		a multidimensional array
+	 * @param	array	$sanitizer	a matching multidimensional array of sanitizers
+	 *
+	 * @return	array				new array, fully mapped with the provided arrays
+	 */
+	function meta_box_array_map_r( $func, $meta, $sanitizer ) {
+			
+		$newMeta = array();
+		$meta = array_values( $meta );
+		
+		foreach( $meta as $key => $array ) {
+			if ( $array == '' )
+				continue;
+			/**
+			 * some values are stored as array, we only want multidimensional ones
+			 */
+			if ( ! is_array( $array ) ) {
+				return array_map( $func, $meta, (array)$sanitizer );
+				break;
+			}
+			/**
+			 * the sanitizer will have all of the fields, but the item may only 
+			 * have valeus for a few, remove the ones we don't have from the santizer
+			 */
+			$keys = array_keys( $array );
+			$newSanitizer = $sanitizer;
+			if ( is_array( $sanitizer ) ) {
+				foreach( $newSanitizer as $sanitizerKey => $value )
+					if ( ! in_array( $sanitizerKey, $keys ) )
+						unset( $newSanitizer[$sanitizerKey] );
+			}
+			/**
+			 * run the function as deep as the array goes
+			 */
+			foreach( $array as $arrayKey => $arrayValue )
+				if ( is_array( $arrayValue ) )
+					$array[$arrayKey] = meta_box_array_map_r( $func, $arrayValue, $newSanitizer[$arrayKey] );
+			
+			$array = array_map( $func, $array, $newSanitizer );
+			$newMeta[$key] = array_combine( $keys, array_values( $array ) );
+		}
+		return $newMeta;
+	}
+
 }
