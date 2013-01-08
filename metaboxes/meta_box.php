@@ -1,7 +1,7 @@
 <?php
 
 // metaboxes directory constant
-define( 'CUSTOM_METABOXES_DIR', dirname(__FILE__) );
+define( 'CUSTOM_METABOXES_DIR', get_template_directory_uri() . '/metaboxes/' );
 
 /**
  * recives data about a form field and spits out the proper html
