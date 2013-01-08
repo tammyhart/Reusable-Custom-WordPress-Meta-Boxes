@@ -23,10 +23,11 @@ function the_field( $field, $meta = null, $option = false, $setting = null ) {
 	$desc = isset( $field['desc'] ) ? '<span class="description">' . $field['desc'] . '</span>' : null;
 	$place = isset( $field['place'] ) ? $field['place'] : null;
 	$size = isset( $field['size'] ) ? $field['size'] : null;
-	$sanitizer = isset( $field['sanitizer'] ) ? $field['sanitizer'] : 'sanitize_text_field';
+	$options = isset( $field['options'] ) ? $field['options'] : null;
+	$repeatable_fields = isset( $field['repeatable_fields'] ) ? $field['repeatable_fields'] : null;
+	
+	// the id and name for each field
 	$id = $name = isset( $field['id'] ) ? $field['id'] : null;
-	if ( $option )
-		$name = $setting . '[' . $name . ']';
 					switch( $type ) {
 						// basic
 						case 'text':
@@ -202,7 +203,7 @@ function the_field( $field, $meta = null, $option = false, $setting = null ) {
 							}				
 							echo	'<input name="' . esc_attr( $id ) . '" type="hidden" class="meta_box_upload_image" value="' . $meta . '" />
 										<img src="' . $image . '" class="meta_box_preview_image" alt="" />
-											<input class="meta_box_upload_image_button button" type="button" rel="' . $post->ID . '" value="Choose Image" />
+											<input class="meta_box_upload_image_button button" type="button" rel="' . get_the_ID() . '" value="Choose Image" />
 											<small>&nbsp;<a href="#" class="meta_box_clear_image_button">Remove Image</a></small>
 											<br clear="all" />' . $desc;
 						break;
@@ -316,7 +317,7 @@ function the_field( $field, $meta = null, $option = false, $setting = null ) {
  */
 function meta_box_find_field_type( $needle, $haystack ) {
 	foreach ( $haystack as $h )
-		if ( isset( $h['type'] ) && $h['type']	 == 'repeatable' )
+		if ( isset( $h['type'] ) && $h['type'] == 'repeatable' )
 			return meta_box_find_field_type( $needle, $h['repeatable_fields'] );
 		elseif ( ( isset( $h['type'] ) && $h['type'] == $needle ) || ( isset( $h['repeatable_type'] ) && $h['repeatable_type'] == $needle ) )
 			return true;
@@ -579,7 +580,9 @@ class Custom_Add_Meta_Box {
 		$post_type = get_post_type();
 		
 		// verify nonce
-		if ( ! ( in_array( $post_type, $this->page ) || isset( $_POST['custom_meta_box_nonce_field'] ) || wp_verify_nonce( $_POST['custom_meta_box_nonce_field'],  'custom_meta_box_nonce_action' ) ) ) 
+		if ( ! isset( $_POST['custom_meta_box_nonce_field'] ) )
+			return $post_id;
+		if ( ! ( in_array( $post_type, $this->page ) || wp_verify_nonce( $_POST['custom_meta_box_nonce_field'],  'custom_meta_box_nonce_action' ) ) ) 
 			return $post_id;
 		// check autosave
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )

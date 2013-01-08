@@ -119,7 +119,29 @@ $fields = array(
 		'label'	=> 'Repeatable', // <label>
 		'desc'	=> 'A description for the field.', // description
 		'id'	=> $prefix.'repeatable', // field id and name
-		'type'	=> 'repeatable' // type of field
+		'type'	=> 'repeatable', // type of field
+		'sanitizer' => array( // array of sanitizers with matching kets to next array
+			'featured' => 'sanitize_text_field',
+			'title' => 'sanitize_text_field',
+			'desc' => 'wp_kses_data'
+		),
+		'repeatable_fields' => array ( // array of fields to be repeated
+			'featured' => array(
+				'repeatable_label' => 'Featured?',
+				'repeatable_id' => 'featured',
+				'repeatable_type' => 'checkbox'
+			),
+			'title' => array(
+				'repeatable_label' => 'Title',
+				'repeatable_id' => 'title',
+				'repeatable_type' => 'text'
+			),
+			'desc' => array(
+				'repeatable_label' => 'Description',
+				'repeatable_id' => 'desc',
+				'repeatable_type' => 'textarea'
+			)
+		)
 	)
 );
 
