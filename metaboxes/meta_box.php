@@ -2,14 +2,18 @@
 
 /**
  * takes in a few peices of data and creates a custom meta box
+ *
+ * @param	string			$id			meta box id
+ * @param	string			$title		title
+ * @param	array			$fields		array of each field the box should include
+ * @param	string|array	$page		post type to add meta box to
  */
 class Custom_Add_Meta_Box {
 	
-	var $id; // string meta box id
-	var $title; // string title
-	var $fields; // array fields
-	var $page; // string|array post type to add meta box to
-	var $js; // bool including javascript or not
+	var $id;
+	var $title;
+	var $fields;
+	var $page;
 	
     public function __construct( $id, $title, $fields, $page, $js ) {
 		$this->id = $id;
@@ -18,9 +22,8 @@ class Custom_Add_Meta_Box {
 		$this->page = $page;
 		$this->js = $js;
 		
-		if( ! is_array( $this->page ) ) {
+		if( ! is_array( $this->page ) )
 			$this->page = array( $this->page );
-		}
 		
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'admin_head',  array( $this, 'admin_head' ) );
@@ -28,6 +31,9 @@ class Custom_Add_Meta_Box {
 		add_action( 'save_post',  array( $this, 'save_box' ));
     }
 	
+	/**
+	 * enqueue necessary scripts and styles
+	 */
 	function admin_enqueue_scripts() {
 		global $pagenow;
 		if ( in_array( $pagenow, array( 'post-new.php', 'post.php' ) ) && in_array( get_post_type(), $this->page ) ) {
@@ -58,25 +64,30 @@ class Custom_Add_Meta_Box {
 		}
 	}
 	
-	// scripts
+	/**
+	 * adds scripts to the head for special fields with extra js requirements
+	 */
 	function admin_head() {
-		global $post, $post_type;
+		global $post;
 		
-		if ( in_array( get_post_type(), $this->page ) && $this->js == true ) : 
+		if ( in_array( get_post_type(), $this->page ) && ( meta_box_find_field_type( 'date', $this->fields ) ) || meta_box_find_field_type( 'slider', $this->fields ) ) : 
 		
 			echo '<script type="text/javascript">
 						jQuery(function( $) {';
 			
 			foreach ( $this->fields as $field ) {
-				// date
-				if( $field['type'] == 'date' )
-					echo '$("#' . $field['id'] . '").datepicker({
-							dateFormat: \'yy-mm-dd\'
-						});';
-				// slider
-				if ( $field['type'] == 'slider' ) {
+				switch( $field['type'] ) {
+					// date
+					case 'date' :
+						echo '$("#' . $field['id'] . '").datepicker({
+								dateFormat: \'yy-mm-dd\'
+							});';
+					break;
+					// slider
+					case 'slider' :
 					$value = get_post_meta( $post->ID, $field['id'], true );
-					if ( $value == '' ) $value = $field['min'];
+					if ( $value == '' )
+						$value = $field['min'];
 					echo '
 							$( "#' . $field['id'] . '-slider" ).slider({
 								value: ' . $value . ',
@@ -87,6 +98,7 @@ class Custom_Add_Meta_Box {
 									$( "#' . $field['id'] . '" ).val( ui.value );
 								}
 							});';
+					break;
 				}
 			}
 			
@@ -96,12 +108,18 @@ class Custom_Add_Meta_Box {
 		endif;
 	}
 	
+	/**
+	 * adds the meta box for every post type in $page
+	 */
 	function add_box() {
 		foreach ( $this->page as $page ) {
 			add_meta_box( $this->id, $this->title, array( $this, 'meta_box_callback' ), $page, 'normal', 'high' );
 		}
 	}
 	
+	/**
+	 * outputs the meta box
+	 */
 	function meta_box_callback() {
 		global $post;
 		// Use nonce for verification
@@ -110,42 +128,114 @@ class Custom_Add_Meta_Box {
 		// Begin the field table and loop
 		echo '<table class="form-table meta_box">';
 		foreach ( $this->fields as $field) {
-			
 			if ( $field['type'] == 'section' ) {
-				echo '<tr><th colspan="2"><h2>' . $field['label'] . '</h2></th></tr>';
-				$sanitizer = null;
-			}
-			
-			else {
-			
-				// get data for this field
-				unset( $sanitizer );
-				extract( $field );
-				
-				if ( !empty( $desc ) )
-					$desc = '<span class="description">' . $desc . '</span>';
-					
-				// get sanitized value of this field
-				$sanitizer = isset( $sanitizer ) ? $sanitizer : 'sanitize_text_field';
-				$meta = get_post_meta( $post->ID, $id, true );
-				if ( is_array( $meta ) )
-					$meta = meta_box_array_map_r( 'meta_box_sanitize', $meta, $sanitizer );
-				else
-					$meta = meta_box_sanitize( $meta, $sanitizer );
-					
-				// begin a table row with
 				echo '<tr>
-						<th><label for="' . esc_attr( $id ) . '">' . $label . '</label></th>
+						<td colspan="2">
+							<h2>' . $field['label'] . '</h2>
+						</td>
+					</tr>';
+			}
+			else {
+				echo '<tr>
+						<th style="width:20%"><label for="' . $field['id'] . '">' . $field['label'] . '</label></th>
 						<td>';
+						
+						$meta = get_post_meta( $post->ID, $field['id'], true);
+						echo the_field( $field, $meta );
+						
+				echo     '<td>
+					</tr>';
+			}
+		} // end foreach
+		echo '</table>'; // end table
+	}
+	
+	/**
+	 * saves the captured data
+	 */
+	function save_box( $post_id ) {
+		$post_type = get_post_type();
+		
+		// verify nonce
+		if ( ! ( in_array( $post_type, $this->page ) || isset( $_POST['custom_meta_box_nonce_field'] ) || wp_verify_nonce( $_POST['custom_meta_box_nonce_field'],  'custom_meta_box_nonce_action' ) ) ) 
+			return $post_id;
+		// check autosave
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
+			return $post_id;
+		// check permissions
+		if ( ! current_user_can( 'edit_page', $post_id ) )
+			return $post_id;
+		
+		// loop through fields and save the data
+		foreach ( $this->fields as $field ) {
+			if( $field['type'] == 'section' ) {
+				$sanitizer = null;
+				continue;
+			}
+			if( in_array( $field['type'], array( 'tax_select', 'tax_checkboxes' ) ) ) {
+				// save taxonomies
+				if ( isset( $_POST[$field['id']] ) )
+					$term = $_POST[$field['id']];
+				wp_set_object_terms( $post_id, $term, $field['id'] );
+			}
+			else {
+				// save the rest
+				$old = get_post_meta( $post_id, $field['id'], true );
+				if ( isset( $_POST[$field['id']] ) )
+					$new = $_POST[$field['id']];
+				if ( isset( $new ) && $new != $old ) {
+					$sanitizer = isset( $field['sanitizer'] ) ? $field['sanitizer'] : 'sanitize_text_field';
+					if ( is_array( $new ) )
+						$new = meta_box_array_map_r( 'meta_box_sanitize', $new, $sanitizer );
+					else
+						$new = meta_box_sanitize( $new, $sanitizer );
+					update_post_meta( $post_id, $field['id'], $new );
+				} elseif ( isset( $new ) && '' == $new && $old ) {
+					delete_post_meta( $post_id, $field['id'], $old );
+				}
+			}
+		} // end foreach
+	}
+
+	/**
+	 * recives data about a form field and spits out the proper html
+	 *
+	 * @param	array					$field		array with various bits of information about the field
+	 * @param	string|int|bool|array	$meta		the saved data for this field
+	 * @param	bool					$option		ss this for an option or a meta box?
+	 * @param	string					$setting	name of the setting to use if $option == true
+	 *
+	 * @return	string								html for the field
+	 */
+	function the_field( $field, $meta = null, $option = false, $setting = null ) {
+		if ( ! ( $field || is_array( $field ) ) )
+			return;
+		
+		// get field data
+		$type = isset( $field['type'] ) ? $field['type'] : null;
+		$label = isset( $field['label'] ) ? $field['label'] : null;
+		$desc = isset( $field['desc'] ) ? '<span class="description">' . $field['desc'] . '</span>' : null;
+		$place = isset( $field['place'] ) ? $field['place'] : null;
+		$size = isset( $field['size'] ) ? $field['size'] : null;
+		$sanitizer = isset( $field['sanitizer'] ) ? $field['sanitizer'] : 'sanitize_text_field';
+		$id = $name = isset( $field['id'] ) ? $field['id'] : null;
+		if ( $option )
+			$name = $setting . '[' . $name . ']';
 						switch( $type ) {
 							// basic
 							case 'text':
-							case 'url':
-							case 'email':
 							case 'tel':
-							case 'number':
+							case 'email':
 							default:
-								echo '<input type="' . $type . '" name="' . esc_attr( $id ) . '" id="' . esc_attr( $id ) . '" value="' . $meta . '" class="regular-text" size="30" />
+								echo '<input type="' . $type . '" name="' . esc_attr( $id ) . '" id="' . esc_attr( $id ) . '" value="' . esc_attr( $meta ) . '" class="regular-text" size="30" />
+										<br />' . $desc;
+							break;
+							case 'url':
+								echo '<input type="' . $type . '" name="' . esc_attr( $id ) . '" id="' . esc_attr( $id ) . '" value="' . esc_url( $meta ) . '" class="regular-text" size="30" />
+										<br />' . $desc;
+							break;
+							case 'number':
+								echo '<input type="' . $type . '" name="' . esc_attr( $id ) . '" id="' . esc_attr( $id ) . '" value="' . intval( $meta ) . '" class="regular-text" size="30" />
 										<br />' . $desc;
 							break;
 							// textarea
@@ -406,58 +496,8 @@ class Custom_Add_Meta_Box {
 									' . $desc;
 							break;
 						} //end switch
-				echo '</td></tr>';
-			} // end ! $type = section
-		} // end foreach
-		echo '</table>'; // end table
+			
 	}
-	
-	// Save the Data
-	function save_box( $post_id ) {
-		$post_type = get_post_type();
-		
-		// verify nonce
-		if ( ! ( in_array( $post_type, $this->page ) || isset( $_POST['custom_meta_box_nonce_field'] ) || wp_verify_nonce( $_POST['custom_meta_box_nonce_field'],  'custom_meta_box_nonce_action' ) ) ) 
-			return $post_id;
-		// check autosave
-		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
-			return $post_id;
-		// check permissions
-		if ( ! current_user_can( 'edit_page', $post_id ) )
-			return $post_id;
-		
-		// loop through fields and save the data
-		foreach ( $this->fields as $field ) {
-			if( $field['type'] == 'section' ) {
-				$sanitizer = null;
-				continue;
-			}
-			if( in_array( $field['type'], array( 'tax_select', 'tax_checkboxes' ) ) ) {
-				// save taxonomies
-				if ( isset( $_POST[$field['id']] ) )
-					$term = $_POST[$field['id']];
-				wp_set_object_terms( $post_id, $term, $field['id'] );
-			}
-			else {
-				// save the rest
-				$old = get_post_meta( $post_id, $field['id'], true );
-				if ( isset( $_POST[$field['id']] ) )
-					$new = $_POST[$field['id']];
-				if ( isset( $new ) && $new != $old ) {
-					$sanitizer = isset( $field['sanitizer'] ) ? $field['sanitizer'] : 'sanitize_text_field';
-					if ( is_array( $new ) )
-						$new = meta_box_array_map_r( 'meta_box_sanitize', $new, $sanitizer );
-					else
-						$new = meta_box_sanitize( $new, $sanitizer );
-					update_post_meta( $post_id, $field['id'], $new );
-				} elseif ( isset( $new ) && '' == $new && $old ) {
-					delete_post_meta( $post_id, $field['id'], $old );
-				}
-			}
-		} // end foreach
-	}
-	
-	// Helper Functions ------------------------------------------------
 	
 	
 	/**
