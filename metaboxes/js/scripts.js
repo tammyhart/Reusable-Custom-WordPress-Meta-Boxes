@@ -5,15 +5,13 @@ jQuery(function($) {
 		formID = $(this).attr('rel');
 		formfield = $(this).siblings('.meta_box_upload_image');
 		preview = $(this).siblings('.meta_box_preview_image');
-		tb_show('Choose Image', 'media-upload.php?post_id=' + formID + '&type=image&custom=simple&TB_iframe=1');
+		tb_show('Choose Image', 'media-upload.php?post_id=' + formID + '&type=image&TB_iframe=1');
 		window.orig_send_to_editor = window.send_to_editor;
 		window.send_to_editor = function(html) {
-			img = $('img', html);
-			imgurl = img.attr('src');
-			classes = img.attr('class');
-			id = classes.replace(/(.*?)wp-image-/, '');
+			imgurl = html.match(/<img.*?src="(.*?)"/);
+			id = html.replace(/(.*?)wp-image-/, '');
 			formfield.val(id);
-			preview.attr('src', imgurl);
+			preview.attr('src', imgurl[1]);
 			tb_remove();
 			window.send_to_editor = window.orig_send_to_editor;
 		}
@@ -34,7 +32,7 @@ jQuery(function($) {
 		formfield = $(this).siblings('.meta_box_upload_file');
 		preview = $(this).siblings('.meta_box_filename');
 		icon = $(this).siblings('.meta_box_file');
-		tb_show('Choose File', 'media-upload.php?post_id=' + formID + '&type=file&custom=file&TB_iframe=1');
+		tb_show('Choose File', 'media-upload.php?post_id=' + formID + '&type=file&TB_iframe=1');
 		window.orig_send_to_editor = window.send_to_editor;
 		window.send_to_editor = function(html) {
 			fileurl = $(html).attr('href');
@@ -84,8 +82,10 @@ jQuery(function($) {
 		$('input.repeatable_id:text').each(function(){ arr.push($(this).val()); }); 
 		clone.find('input.repeatable_id')
 			.val(Number(Math.max.apply( Math, arr )) + 1);
-		clone.find('select.chosen')
-			.chosen({allow_single_deselect: true});
+		if (!!$.prototype.chosen) {
+			clone.find('select.chosen')
+				.chosen({allow_single_deselect: true});
+		}
 		//
 		return false;
 	});
@@ -115,21 +115,11 @@ jQuery(function($) {
 			var thisID = $(this).attr('id');
 			$('.store-' + thisID).val(result) 
 		}
-        //stop: function(){ $('.string').val($("ul.droptrue").sortable("serialize")) },
     });
 
 	$('.sort_list').disableSelection();
 
-	lazy_chosen_load_init();
-	function lazy_chosen_load_init() {
-		$('.chosen').bind('scrollin', { distance: 25 }, function() {
-			lazy_chosen_load( this );
-		});
-	}
-
-	function lazy_chosen_load(chosen) {
-		var $chosen = $(chosen);
-		$chosen.chosen({ allow_single_deselect: true });
-		$chosen.unbind('scrollin');
-	}
+	// turn select boxes into something magical
+	if (!!$.prototype.chosen)
+		$('.chosen').chosen({ allow_single_deselect: true });
 });

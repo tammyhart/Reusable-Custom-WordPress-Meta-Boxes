@@ -1,7 +1,7 @@
 <?php
 
 // metaboxes directory constant
-define( 'CUSTOM_METABOXES_DIR', get_template_directory_uri() . '/metaboxes/' );
+define( 'CUSTOM_METABOXES_DIR', get_template_directory_uri() . '/metaboxes' );
 
 /**
  * recives data about a form field and spits out the proper html
@@ -101,11 +101,11 @@ function the_field( $field, $meta = null, $option = false, $setting = null ) {
 						break;
 						// post_select, post_chosen
 						case 'post_select':
+						case 'post_list':
 						case 'post_chosen':
 							echo '<select data-placeholder="Select One" name="' . esc_attr( $id ) . '[]" id="' . esc_attr( $id ) . '"' , $type == 'post_chosen' ? ' class="chosen"' : '' , isset( $multiple ) && $multiple == true ? ' multiple="multiple"' : '' , '>
 									<option value=""></option>'; // Select One
 							$posts = get_posts( array( 'post_type' => $post_type, 'posts_per_page' => -1, 'orderby' => 'name', 'order' => 'ASC' ) );
-							if ( $post_type == 'tcnmy-participant' ) usort( $posts, 'tcnmy_cmp_title' );
 							foreach ( $posts as $item )
 								echo '<option value="' . $item->ID . '"' . selected( in_array( $item->ID, $meta ), true, false ) . '>' . $item->post_title . '</option>';
 							$post_type_object = get_post_type_object( $post_type );
@@ -114,7 +114,6 @@ function the_field( $field, $meta = null, $option = false, $setting = null ) {
 						// post_checkboxes
 						case 'post_checkboxes':
 							$posts = get_posts( array( 'post_type' => $post_type, 'posts_per_page' => -1 ) );
-							usort( $posts, 'tcnmy_cmp_title' );
 							echo '<ul class="meta_box_items">';
 							foreach ( $posts as $item ) 
 								echo '<li><input type="checkbox" value="' . $item->ID . '" name="' . esc_attr( $id ) . '[]" id="' . esc_attr( $id ) . '-' . $item->ID . '"' , is_array( $meta ) && in_array( $item->ID, $meta ) ? ' checked="checked"' : '' , ' />

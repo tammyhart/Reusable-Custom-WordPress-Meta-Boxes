@@ -91,7 +91,7 @@ $fields = array(
 		'label'	=> 'Post List', // <label>
 		'desc'	=> 'A description for the field.', // description
 		'id'	=>  $prefix.'post_id', // field id and name
-		'type'	=> 'post_list', // type of field
+		'type'	=> 'post_select', // type of field
 		'post_type' => array('post','page') // post types to display, options are prefixed with their post type
 	),
 	array( // jQuery UI Date input
