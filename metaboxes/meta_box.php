@@ -6,14 +6,13 @@ define( 'CUSTOM_METABOXES_DIR', get_template_directory_uri() . '/metaboxes' );
 /**
  * recives data about a form field and spits out the proper html
  *
- * @param	array					$field		array with various bits of information about the field
- * @param	string|int|bool|array	$meta		the saved data for this field
- * @param	bool					$option		ss this for an option or a meta box?
- * @param	string					$setting	name of the setting to use if $option == true
+ * @param	array					$field			array with various bits of information about the field
+ * @param	string|int|bool|array	$meta			the saved data for this field
+ * @param	array					$repeatable		if is this for a repeatable field, contains parant id and the current integar
  *
- * @return	string								html for the field
+ * @return	string									html for the field
  */
-function the_field( $field, $meta = null, $option = false, $setting = null ) {
+function the_field( $field, $meta = null, $repeatable = null ) {
 	if ( ! ( $field || is_array( $field ) ) )
 		return;
 	
@@ -28,26 +27,30 @@ function the_field( $field, $meta = null, $option = false, $setting = null ) {
 	
 	// the id and name for each field
 	$id = $name = isset( $field['id'] ) ? $field['id'] : null;
+	if ( $repeatable ) {
+		$name = $repeatable[0] . '[' . $repeatable[1] . '][' . $id .']';
+		$id = $repeatable[0] . '_' . $repeatable[1] . '_' . $id;
+	}
 					switch( $type ) {
 						// basic
 						case 'text':
 						case 'tel':
 						case 'email':
 						default:
-							echo '<input type="' . $type . '" name="' . esc_attr( $id ) . '" id="' . esc_attr( $id ) . '" value="' . esc_attr( $meta ) . '" class="regular-text" size="30" />
+							echo '<input type="' . $type . '" name="' . esc_attr( $name ) . '" id="' . esc_attr( $id ) . '" value="' . esc_attr( $meta ) . '" class="regular-text" size="30" />
 									<br />' . $desc;
 						break;
 						case 'url':
-							echo '<input type="' . $type . '" name="' . esc_attr( $id ) . '" id="' . esc_attr( $id ) . '" value="' . esc_url( $meta ) . '" class="regular-text" size="30" />
+							echo '<input type="' . $type . '" name="' . esc_attr( $name ) . '" id="' . esc_attr( $id ) . '" value="' . esc_url( $meta ) . '" class="regular-text" size="30" />
 									<br />' . $desc;
 						break;
 						case 'number':
-							echo '<input type="' . $type . '" name="' . esc_attr( $id ) . '" id="' . esc_attr( $id ) . '" value="' . intval( $meta ) . '" class="regular-text" size="30" />
+							echo '<input type="' . $type . '" name="' . esc_attr( $name ) . '" id="' . esc_attr( $id ) . '" value="' . intval( $meta ) . '" class="regular-text" size="30" />
 									<br />' . $desc;
 						break;
 						// textarea
 						case 'textarea':
-							echo '<textarea name="' . esc_attr( $id ) . '" id="' . esc_attr( $id ) . '" cols="60" rows="4">' . esc_textarea( $meta ) . '</textarea>
+							echo '<textarea name="' . esc_attr( $name ) . '" id="' . esc_attr( $id ) . '" cols="60" rows="4">' . esc_textarea( $meta ) . '</textarea>
 									<br />' . $desc;
 						break;
 						// editor
@@ -56,13 +59,13 @@ function the_field( $field, $meta = null, $option = false, $setting = null ) {
 						break;
 						// checkbox
 						case 'checkbox':
-							echo '<input type="checkbox" name="' . esc_attr( $id ) . '" id="' . esc_attr( $id ) . '" ' . checked( $meta, true, false ) . ' value="1" />
+							echo '<input type="checkbox" name="' . esc_attr( $name ) . '" id="' . esc_attr( $id ) . '" ' . checked( $meta, true, false ) . ' value="1" />
 									<label for="' . esc_attr( $id ) . '">' . $desc . '</label>';
 						break;
 						// select, chosen
 						case 'select':
 						case 'chosen':
-							echo '<select name="' . esc_attr( $id ) . '" id="' . esc_attr( $id ) . '"' , $type == 'chosen' ? ' class="chosen"' : '' , isset( $multiple ) && $multiple == true ? ' multiple="multiple"' : '' , '>
+							echo '<select name="' . esc_attr( $name ) . '" id="' . esc_attr( $id ) . '"' , $type == 'chosen' ? ' class="chosen"' : '' , isset( $multiple ) && $multiple == true ? ' multiple="multiple"' : '' , '>
 									<option value="">Select One</option>'; // Select One
 							foreach ( $options as $option )
 								echo '<option' . selected( $meta, $option['value'], false ) . ' value="' . $option['value'] . '">' . $option['label'] . '</option>';
@@ -72,7 +75,7 @@ function the_field( $field, $meta = null, $option = false, $setting = null ) {
 						case 'radio':
 							echo '<ul class="meta_box_items">';
 							foreach ( $options as $option )
-								echo '<li><input type="radio" name="' . esc_attr( $id ) . '" id="' . esc_attr( $id ) . '-' . $option['value'] . '" value="' . $option['value'] . '" ' . checked( $meta, $option['value'], false ) . ' />
+								echo '<li><input type="radio" name="' . esc_attr( $name ) . '" id="' . esc_attr( $id ) . '-' . $option['value'] . '" value="' . $option['value'] . '" ' . checked( $meta, $option['value'], false ) . ' />
 										<label for="' . esc_attr( $id ) . '-' . $option['value'] . '">' . $option['label'] . '</label></li>';
 							echo '</ul>' . $desc;
 						break;
@@ -80,14 +83,14 @@ function the_field( $field, $meta = null, $option = false, $setting = null ) {
 						case 'checkbox_group':
 							echo '<ul class="meta_box_items">';
 							foreach ( $options as $option )
-								echo '<li><input type="checkbox" value="' . $option['value'] . '" name="' . esc_attr( $id ) . '[]" id="' . esc_attr( $id ) . '-' . $option['value'] . '"' , is_array( $meta ) && in_array( $option['value'], $meta ) ? ' checked="checked"' : '' , ' /> 
+								echo '<li><input type="checkbox" value="' . $option['value'] . '" name="' . esc_attr( $name ) . '[]" id="' . esc_attr( $id ) . '-' . $option['value'] . '"' , is_array( $meta ) && in_array( $option['value'], $meta ) ? ' checked="checked"' : '' , ' /> 
 										<label for="' . esc_attr( $id ) . '-' . $option['value'] . '">' . $option['label'] . '</label></li>';
 							echo '</ul>' . $desc;
 						break;
 						// color
 						case 'color':
 							$meta = $meta ? $meta : '#';
-							echo '<input type="text" name="' . esc_attr( $id ) . '" id="' . esc_attr( $id ) . '" value="' . $meta . '" size="10" />
+							echo '<input type="text" name="' . esc_attr( $name ) . '" id="' . esc_attr( $id ) . '" value="' . $meta . '" size="10" />
 								<br />' . $desc;
 							echo '<div id="colorpicker-' . esc_attr( $id ) . '"></div>
 								<script type="text/javascript">
@@ -103,7 +106,7 @@ function the_field( $field, $meta = null, $option = false, $setting = null ) {
 						case 'post_select':
 						case 'post_list':
 						case 'post_chosen':
-							echo '<select data-placeholder="Select One" name="' . esc_attr( $id ) . '[]" id="' . esc_attr( $id ) . '"' , $type == 'post_chosen' ? ' class="chosen"' : '' , isset( $multiple ) && $multiple == true ? ' multiple="multiple"' : '' , '>
+							echo '<select data-placeholder="Select One" name="' . esc_attr( $name ) . '[]" id="' . esc_attr( $id ) . '"' , $type == 'post_chosen' ? ' class="chosen"' : '' , isset( $multiple ) && $multiple == true ? ' multiple="multiple"' : '' , '>
 									<option value=""></option>'; // Select One
 							$posts = get_posts( array( 'post_type' => $post_type, 'posts_per_page' => -1, 'orderby' => 'name', 'order' => 'ASC' ) );
 							foreach ( $posts as $item )
@@ -116,7 +119,7 @@ function the_field( $field, $meta = null, $option = false, $setting = null ) {
 							$posts = get_posts( array( 'post_type' => $post_type, 'posts_per_page' => -1 ) );
 							echo '<ul class="meta_box_items">';
 							foreach ( $posts as $item ) 
-								echo '<li><input type="checkbox" value="' . $item->ID . '" name="' . esc_attr( $id ) . '[]" id="' . esc_attr( $id ) . '-' . $item->ID . '"' , is_array( $meta ) && in_array( $item->ID, $meta ) ? ' checked="checked"' : '' , ' />
+								echo '<li><input type="checkbox" value="' . $item->ID . '" name="' . esc_attr( $name ) . '[]" id="' . esc_attr( $id ) . '-' . $item->ID . '"' , is_array( $meta ) && in_array( $item->ID, $meta ) ? ' checked="checked"' : '' , ' />
 										<label for="' . esc_attr( $id ) . '-' . $item->ID . '">' . $item->post_title . '</label></li>';
 							$post_type_object = get_post_type_object( $post_type );
 							echo '</ul> ' . $desc , ' &nbsp;<span class="description"><a href="' . admin_url( 'edit.php?post_type=' . $post_type . '">Manage ' . $post_type_object->label ) . '</a></span>';
@@ -137,7 +140,7 @@ function the_field( $field, $meta = null, $option = false, $setting = null ) {
 											}
 										}
 								echo '</ul>
-									<input type="hidden" name="' . esc_attr( $id ) . '[' . $area['id'] . ']" 
+									<input type="hidden" name="' . esc_attr( $name ) . '[' . $area['id'] . ']" 
 									class="store-area-' . $area['id'] . '" 
 									value="' , $meta ? $meta[$area['id']] : '' , '" />';
 							}
@@ -159,7 +162,7 @@ function the_field( $field, $meta = null, $option = false, $setting = null ) {
 						break;
 						// tax_select
 						case 'tax_select':
-							echo '<select name="' . esc_attr( $id ) . '" id="' . esc_attr( $id ) . '">
+							echo '<select name="' . esc_attr( $name ) . '" id="' . esc_attr( $id ) . '">
 									<option value="">Select One</option>'; // Select One
 							$terms = get_terms( $id, 'get=all' );
 							$post_terms = wp_get_object_terms( $post->ID, $id );
@@ -182,14 +185,14 @@ function the_field( $field, $meta = null, $option = false, $setting = null ) {
 						break;
 						// date
 						case 'date':
-							echo '<input type="text" class="datepicker" name="' . esc_attr( $id ) . '" id="' . esc_attr( $id ) . '" value="' . $meta . '" size="30" />
+							echo '<input type="text" class="datepicker" name="' . esc_attr( $name ) . '" id="' . esc_attr( $id ) . '" value="' . $meta . '" size="30" />
 									<br />' . $desc;
 						break;
 						// slider
 						case 'slider':
 						$value = $meta != '' ? intval( $meta ) : '0';
 							echo '<div id="' . esc_attr( $id ) . '-slider"></div>
-									<input type="text" name="' . esc_attr( $id ) . '" id="' . esc_attr( $id ) . '" value="' . $value . '" size="5" />
+									<input type="text" name="' . esc_attr( $name ) . '" id="' . esc_attr( $id ) . '" value="' . $value . '" size="5" />
 									<br />' . $desc;
 						break;
 						// image
@@ -200,7 +203,7 @@ function the_field( $field, $meta = null, $option = false, $setting = null ) {
 								$image = wp_get_attachment_image_src( intval( $meta ), 'medium' );
 								$image = $image[0];
 							}				
-							echo	'<input name="' . esc_attr( $id ) . '" type="hidden" class="meta_box_upload_image" value="' . $meta . '" />
+							echo	'<input name="' . esc_attr( $name ) . '" type="hidden" class="meta_box_upload_image" value="' . $meta . '" />
 										<img src="' . $image . '" class="meta_box_preview_image" alt="" />
 											<input class="meta_box_upload_image_button button" type="button" rel="' . get_the_ID() . '" value="Choose Image" />
 											<small>&nbsp;<a href="#" class="meta_box_clear_image_button">Remove Image</a></small>
@@ -210,7 +213,7 @@ function the_field( $field, $meta = null, $option = false, $setting = null ) {
 						case 'file':		
 							$iconClass = 'meta_box_file';
 							if ( $meta ) $iconClass .= ' checked';
-							echo	'<input name="' . esc_attr( $id ) . '" type="hidden" class="meta_box_upload_file" value="' . $meta . '" />
+							echo	'<input name="' . esc_attr( $name ) . '" type="hidden" class="meta_box_upload_file" value="' . $meta . '" />
 										<span class="' . $iconClass . '"></span>
 										<span class="meta_box_filename">' . $meta . '</span>
 											<input class="meta_box_upload_file_button button" type="button" rel="' . $post->ID . '" value="Choose File" />
@@ -219,8 +222,6 @@ function the_field( $field, $meta = null, $option = false, $setting = null ) {
 						break;
 						// repeatable
 						case 'repeatable':
-							$field_titles = wp_list_pluck( $repeatable_fields, 'repeatable_label' );
-							$field_titles = array_filter( $field_titles ); // remove empty values
 							echo '<table id="' . esc_attr( $id ) . '-repeatable" class="meta_box_repeatable" cellspacing="0">
 								<thead>
 									<tr>
@@ -233,7 +234,7 @@ function the_field( $field, $meta = null, $option = false, $setting = null ) {
 							$i = 0;
 							// create an empty array
 							if ( $meta == '' || $meta == array() ) {
-								$keys = wp_list_pluck( $repeatable_fields, 'repeatable_id' );
+								$keys = wp_list_pluck( $repeatable_fields, 'id' );
 								$meta = array ( array_fill_keys( $keys, null ) );
 							}
 							$meta = array_values( $meta );
@@ -241,49 +242,8 @@ function the_field( $field, $meta = null, $option = false, $setting = null ) {
 								echo '<tr>
 										<td><span class="sort hndle"></span></td><td>';
 								foreach ( $repeatable_fields as $repeatable_field ) {
-									extract( $repeatable_field );
-									echo '<label>' . $repeatable_label  . '</label><p>';
-									switch ( $repeatable_type ) {
-										// checkbox
-										case 'checkbox':
-											$checked = isset( $meta[$i][$repeatable_id] ) ? $meta[$i][$repeatable_id] : '';
-											echo '<p><input type="checkbox" name="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id  . ']" id="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id  . ']" value="' . $repeatable_id . '"' . checked( $checked, $repeatable_id, false ) . ' style="display:inline;" /></p>';
-										break;
-										// radio
-										case 'radio':
-											$checked = isset( $meta[$i][$repeatable_id] ) ? $meta[$i][$repeatable_id] : '';
-											echo '<p><input type="radio" name="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id  . ']" id="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id  . ']" value="' . $repeatable_id . '"' . checked( $checked, $repeatable_id, false ) . ' style="margin-top:7px" /></p>';
-										break;
-										// text
-										case 'text':
-											echo '<input type="text" name="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id  . ']" value="' . $meta[$i][$repeatable_id] . '" size="30" class="regular-text" placeholder="' . $repeatable_label  . '" />';
-										break;
-										// textarea
-										case 'textarea':
-											echo '<textarea name="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id  . ']" cols="30" rows="4" placeholder="' . $repeatable_label  . '">' . $meta[$i][$repeatable_id] . '</textarea>';
-										break;
-										// image
-										case 'image':
-										$image = CUSTOM_METABOXES_DIR . '/images/image.png';	
-										echo '<span class="meta_box_default_image" style="display:none">' . $image . '</span>';
-										if ( $meta[$i][$repeatable_id] ) {
-											$image = $meta[$i][$repeatable_id];
-											if ( intval( $image ) ) {
-												$image = wp_get_attachment_image_src( $image, 'medium' );
-												$image = $image[0];
-											}
-										}				
-										echo	'<input name="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id  . ']" type="hidden" class="meta_box_upload_image" value="' . intval( $meta[$i][$repeatable_id] ) . '" />
-													<img src="' . $image . '" class="meta_box_preview_image" alt="" />
-														<input class="meta_box_upload_image_button button" type="button" rel="' . $post->ID . '" value="Choose Image" />
-														<small>&nbsp; <a href="#" class="meta_box_clear_image_button">Remove Image</a></small>
-														<br clear="all" />';
-										break;
-										// unique id
-										case 'id':
-											echo '<input type="hidden" name="' . esc_attr( $id ) . '[' . $i . '][' . $repeatable_id  . ']" value="' , $meta[$i][$repeatable_id] != '' ? $meta[$i][$repeatable_id] : substr( ereg_replace("[^0-9]", "", uniqid() ), 3, 2 ) , '" size="5" class="repeatable_id" readonly="readonly" />';
-										break;
-									} // end switch
+									echo '<label>' . $repeatable_field['label']  . '</label><p>';
+									echo the_field( $repeatable_field, $meta[$i][$repeatable_field['id']], array( $id, $i ) );
 									echo '</p>';
 								} // end each field
 								echo '</td><td><a class="meta_box_repeatable_remove" href="#"></a></td></tr>';
