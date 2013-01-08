@@ -162,6 +162,10 @@
 	width:25em;
 }
 
+.widget-content .meta_box_repeatable select {
+	width:96%;
+}
+
 /* post_drop_sort */
 .post_drop_sort_areas,
 .post_drop_sort_source {

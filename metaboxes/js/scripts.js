@@ -1,7 +1,7 @@
 jQuery(function($) {
 	
 	// the upload image button, saves the id and outputs a preview of the image
-	$('.meta_box_upload_image_button').live('click', function() {
+	$('.meta_box_upload_image_button').click(function() {
 		formID = $(this).attr('rel');
 		formfield = $(this).siblings('.meta_box_upload_image');
 		preview = $(this).siblings('.meta_box_preview_image');
@@ -21,7 +21,7 @@ jQuery(function($) {
 	});
 	
 	// the remove image link, removes the image id from the hidden field and replaces the image preview
-	$('.meta_box_clear_image_button').live('click', function() {
+	$('.meta_box_clear_image_button').click(function() {
 		var defaultImage = $(this).parent().siblings('.meta_box_default_image').text();
 		$(this).parent().siblings('.meta_box_upload_image').val('');
 		$(this).parent().siblings('.meta_box_preview_image').attr('src', defaultImage);
@@ -29,12 +29,12 @@ jQuery(function($) {
 	});
 	
 	// the file image button, saves the id and outputs the file name
-	$('.meta_box_upload_file_button').live('click', function() {
+	$('.meta_box_upload_file_button').click(function() {
 		formID = $(this).attr('rel');
 		formfield = $(this).siblings('.meta_box_upload_file');
 		preview = $(this).siblings('.meta_box_filename');
 		icon = $(this).siblings('.meta_box_file');
-		tb_show('Choose File', 'media-upload.php?post_id='+formID+'&type=file&custom=file&TB_iframe=1');
+		tb_show('Choose File', 'media-upload.php?post_id=' + formID + '&type=file&custom=file&TB_iframe=1');
 		window.orig_send_to_editor = window.send_to_editor;
 		window.send_to_editor = function(html) {
 			fileurl = $(html).attr('href');
@@ -49,7 +49,7 @@ jQuery(function($) {
 	});
 	
 	// the remove image link, removes the image id from the hidden field and replaces the image preview
-	$('.meta_box_clear_file_button').live('click', function() {
+	$('.meta_box_clear_file_button').click(function() {
 		$(this).parent().siblings('.meta_box_upload_file').val('');
 		$(this).parent().siblings('.meta_box_filename').text('');
 		$(this).parent().siblings('.meta_box_file').removeClass('checked');
@@ -69,12 +69,12 @@ jQuery(function($) {
 		// clone
 		var row = $(this).closest('.meta_box_repeatable').find('tbody tr:last-child');
 		var clone = row.clone();
-		clone.find('input.regular-text, input[type=hidden], textarea').val('');
-		var defaultImage = $(this).parent().siblings('.meta_box_default_image').text();
-		clone.find('.meta_box_preview_image').attr('src', defaultImage);
+		clone.find('select.chosen').removeAttr('style', '').removeAttr('id', '').removeClass('chzn-done').data('chosen', null).next().remove();
+		clone.find('input.regular-text, textarea, select').val('');
+		clone.find('input[type=checkbox], input[type=radio]').attr('checked', false);
 		row.after(clone);
 		// increment name and id
-		clone.find('input.regular-text, input[type=hidden], textarea')
+		clone.find('input, textarea, select')
 			.attr('name', function(index, name) {
 				return name.replace(/(\d+)/, function(fullMatch, n) {
 					return Number(n) + 1;
@@ -84,6 +84,8 @@ jQuery(function($) {
 		$('input.repeatable_id:text').each(function(){ arr.push($(this).val()); }); 
 		clone.find('input.repeatable_id')
 			.val(Number(Math.max.apply( Math, arr )) + 1);
+		clone.find('select.chosen')
+			.chosen({allow_single_deselect: true});
 		//
 		return false;
 	});
@@ -117,9 +119,17 @@ jQuery(function($) {
     });
 
 	$('.sort_list').disableSelection();
-	
-	// chosen
-	$('.chosen').chosen({
-		allow_single_deselect: true	
-	});
+
+	lazy_chosen_load_init();
+	function lazy_chosen_load_init() {
+		$('.chosen').bind('scrollin', { distance: 25 }, function() {
+			lazy_chosen_load( this );
+		});
+	}
+
+	function lazy_chosen_load(chosen) {
+		var $chosen = $(chosen);
+		$chosen.chosen({ allow_single_deselect: true });
+		$chosen.unbind('scrollin');
+	}
 });
