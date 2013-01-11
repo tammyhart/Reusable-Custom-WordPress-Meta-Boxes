@@ -284,6 +284,28 @@ function meta_box_find_field_type( $needle, $haystack ) {
 }
 
 /**
+ * Find repeatable
+ *
+ * This function does almost the same exact thing that the above function 
+ * does, except we're exclusively looking for the repeatable field. The 
+ * reason is that we need a way to look for other fields nested within a 
+ * repeatable, but also need a way to stop at repeatable being true. 
+ * Hopefully I'll find a better way to do this later.
+ *
+ * @param	string	$needle 	field type to look for
+ * @param	array	$haystack	an array to search the type in
+ *
+ * @return	bool				whether or not the type is in the provided array
+ */
+function meta_box_find_repeatable( $needle, $haystack ) {
+	foreach ( $haystack as $h )
+		if ( isset( $h['type'] ) && $h['type'] == 'repeatable' )
+			return true;
+		else
+			return false;
+}
+
+/**
  * sanitize boolean inputs
  */
 function meta_box_santitize_boolean( $string ) {
@@ -432,7 +454,7 @@ class Custom_Add_Meta_Box {
 				meta_box_find_field_type( 'color', $this->fields ),
 				meta_box_find_field_type( 'chosen', $this->fields ),
 				meta_box_find_field_type( 'post_chosen', $this->fields ),
-				meta_box_find_field_type( 'repeatable', $this->fields ),
+				meta_box_find_repeatable( 'repeatable', $this->fields ),
 				meta_box_find_field_type( 'image', $this->fields )
 			) ) )
 				wp_enqueue_script( 'meta_box', CUSTOM_METABOXES_DIR . '/js/scripts.js', $deps );
