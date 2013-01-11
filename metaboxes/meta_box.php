@@ -432,7 +432,8 @@ class Custom_Add_Meta_Box {
 				meta_box_find_field_type( 'color', $this->fields ),
 				meta_box_find_field_type( 'chosen', $this->fields ),
 				meta_box_find_field_type( 'post_chosen', $this->fields ),
-				meta_box_find_field_type( 'repeatable', $this->fields )
+				meta_box_find_field_type( 'repeatable', $this->fields ),
+				meta_box_find_field_type( 'image', $this->fields )
 			) ) )
 				wp_enqueue_script( 'meta_box', CUSTOM_METABOXES_DIR . '/js/scripts.js', $deps );
 			
