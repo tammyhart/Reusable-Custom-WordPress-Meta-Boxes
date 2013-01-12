@@ -203,8 +203,8 @@ function the_field( $field, $meta = null, $repeatable = null ) {
 								$image = wp_get_attachment_image_src( intval( $meta ), 'medium' );
 								$image = $image[0];
 							}				
-							echo	'<input name="' . esc_attr( $name ) . '" type="hidden" class="meta_box_upload_image" value="' . $meta . '" />
-										<img src="' . $image . '" class="meta_box_preview_image" alt="" />
+							echo	'<input name="' . esc_attr( $name ) . '" type="hidden" class="meta_box_upload_image" value="' . intval( $meta ) . '" />
+										<img src="' . esc_attr( $image ) . '" class="meta_box_preview_image" alt="" />
 											<input class="meta_box_upload_image_button button" type="button" rel="' . get_the_ID() . '" value="Choose Image" />
 											<small>&nbsp;<a href="#" class="meta_box_clear_image_button">Remove Image</a></small>
 											<br clear="all" />' . $desc;
@@ -213,9 +213,9 @@ function the_field( $field, $meta = null, $repeatable = null ) {
 						case 'file':		
 							$iconClass = 'meta_box_file';
 							if ( $meta ) $iconClass .= ' checked';
-							echo	'<input name="' . esc_attr( $name ) . '" type="hidden" class="meta_box_upload_file" value="' . $meta . '" />
+							echo	'<input name="' . esc_attr( $name ) . '" type="hidden" class="meta_box_upload_file" value="' . esc_url( $meta ) . '" />
 										<span class="' . $iconClass . '"></span>
-										<span class="meta_box_filename">' . $meta . '</span>
+										<span class="meta_box_filename">' . esc_url( $meta ) . '</span>
 											<input class="meta_box_upload_file_button button" type="button" rel="' . $post->ID . '" value="Choose File" />
 											<small>&nbsp;<a href="#" class="meta_box_clear_file_button">Remove File</a></small>
 											<br clear="all" />' . $desc;

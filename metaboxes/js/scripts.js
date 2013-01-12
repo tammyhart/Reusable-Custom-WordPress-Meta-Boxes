@@ -9,8 +9,8 @@ jQuery(function($) {
 		window.orig_send_to_editor = window.send_to_editor;
 		window.send_to_editor = function(html) {
 			imgurl = html.match(/<img.*?src="(.*?)"/);
-			id = html.replace(/(.*?)wp-image-/, '');
-			formfield.val(id);
+			id = html.match(/wp-image-(.*?)"/, '');
+			formfield.val(id[1]);
 			preview.attr('src', imgurl[1]);
 			tb_remove();
 			window.send_to_editor = window.orig_send_to_editor;
