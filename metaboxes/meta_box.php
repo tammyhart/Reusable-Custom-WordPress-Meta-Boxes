@@ -165,7 +165,7 @@ function the_field( $field, $meta = null, $repeatable = null ) {
 							echo '<select name="' . esc_attr( $name ) . '" id="' . esc_attr( $id ) . '">
 									<option value="">Select One</option>'; // Select One
 							$terms = get_terms( $id, 'get=all' );
-							$post_terms = wp_get_object_terms( $post->ID, $id );
+							$post_terms = wp_get_object_terms( get_the_ID(), $id );
 							$selected= $post_terms ? $terms[0]->slug : null;
 							foreach ( $terms as $term )
 								echo '<option value="' . $term->slug . '"' . selected( $selected, $term->slug, false ) . '>' . $term->name . '</option>'; 
@@ -176,7 +176,7 @@ function the_field( $field, $meta = null, $repeatable = null ) {
 						// tax_checkboxes
 						case 'tax_checkboxes':
 							$terms = get_terms( $id, 'get=all' );
-							$post_terms = wp_get_object_terms( $post->ID, $id );
+							$post_terms = wp_get_object_terms( get_the_ID(), $id );
 							$checked = $post_terms ? $terms[0]->slug : null;
 							foreach ( $terms as $term)
 								echo '<input type="checkbox" value="' . $term->slug . '" name="' . $id . '[]" id="' . $term->slug . '"' . checked( $checked, $term->slug, false ) . ' /> <label for="' . $term->slug . '">' . $term->name . '</label><br />';
@@ -216,7 +216,7 @@ function the_field( $field, $meta = null, $repeatable = null ) {
 							echo	'<input name="' . esc_attr( $name ) . '" type="hidden" class="meta_box_upload_file" value="' . esc_url( $meta ) . '" />
 										<span class="' . $iconClass . '"></span>
 										<span class="meta_box_filename">' . esc_url( $meta ) . '</span>
-											<input class="meta_box_upload_file_button button" type="button" rel="' . $post->ID . '" value="Choose File" />
+											<input class="meta_box_upload_file_button button" type="button" rel="' . get_the_ID() . '" value="Choose File" />
 											<small>&nbsp;<a href="#" class="meta_box_clear_file_button">Remove File</a></small>
 											<br clear="all" />' . $desc;
 						break;
@@ -477,7 +477,6 @@ class Custom_Add_Meta_Box {
 	 */
 	function admin_head() {
 		if ( in_array( get_post_type(), $this->page ) && ( meta_box_find_field_type( 'date', $this->fields ) || meta_box_find_field_type( 'slider', $this->fields ) ) ) {
-		global $post;
 		
 			echo '<script type="text/javascript">
 						jQuery(function( $) {';
@@ -492,7 +491,7 @@ class Custom_Add_Meta_Box {
 					break;
 					// slider
 					case 'slider' :
-					$value = get_post_meta( $post->ID, $field['id'], true );
+					$value = get_post_meta( get_the_ID(), $field['id'], true );
 					if ( $value == '' )
 						$value = $field['min'];
 					echo '
@@ -528,7 +527,6 @@ class Custom_Add_Meta_Box {
 	 * outputs the meta box
 	 */
 	function meta_box_callback() {
-		global $post;
 		// Use nonce for verification
 		wp_nonce_field( 'custom_meta_box_nonce_action', 'custom_meta_box_nonce_field' );
 		
@@ -547,7 +545,7 @@ class Custom_Add_Meta_Box {
 						<th style="width:20%"><label for="' . $field['id'] . '">' . $field['label'] . '</label></th>
 						<td>';
 						
-						$meta = get_post_meta( $post->ID, $field['id'], true);
+						$meta = get_post_meta( get_the_ID(), $field['id'], true);
 						echo the_field( $field, $meta );
 						
 				echo     '<td>
