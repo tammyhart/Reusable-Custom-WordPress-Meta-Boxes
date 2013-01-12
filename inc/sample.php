@@ -131,6 +131,11 @@ $fields = array(
 				'id' => 'featured',
 				'type' => 'checkbox'
 			),
+			array( // Image ID field
+				'label'	=> 'Image', // <label>
+				'id'	=> 'image', // field id and name
+				'type'	=> 'image' // type of field
+			),
 			'title' => array(
 				'label' => 'Title',
 				'id' => 'title',

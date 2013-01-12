@@ -205,7 +205,7 @@ function the_field( $field, $meta = null, $repeatable = null ) {
 							}				
 							echo	'<input name="' . esc_attr( $name ) . '" type="hidden" class="meta_box_upload_image" value="' . intval( $meta ) . '" />
 										<img src="' . esc_attr( $image ) . '" class="meta_box_preview_image" alt="" />
-											<input class="meta_box_upload_image_button button" type="button" rel="' . get_the_ID() . '" value="Choose Image" />
+											<a href="#" class="meta_box_upload_image_button button" rel="' . get_the_ID() . '">Choose Image</a>
 											<small>&nbsp;<a href="#" class="meta_box_clear_image_button">Remove Image</a></small>
 											<br clear="all" />' . $desc;
 						break;

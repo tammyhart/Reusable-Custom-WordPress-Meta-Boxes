@@ -63,7 +63,7 @@
 		.form-table.meta_box .meta_box_repeatable td .meta_box_upload_image_button,
 		.form-table.meta_box .meta_box_repeatable td small,
 		.form-table.meta_box .meta_box_repeatable td small a {
-			display:inline;
+			display:inline-block;
 		}
 		
 	.form-table.meta_box .meta_box_repeatable td label {
