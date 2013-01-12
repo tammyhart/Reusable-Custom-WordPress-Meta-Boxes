@@ -242,6 +242,8 @@ function the_field( $field, $meta = null, $repeatable = null ) {
 								echo '<tr>
 										<td><span class="sort hndle"></span></td><td>';
 								foreach ( $repeatable_fields as $repeatable_field ) {
+									if ( ! array_key_exists( $repeatable_field['id'], $meta[$i] ) )
+										$meta[$i][$repeatable_field['id']] = null;
 									echo '<label>' . $repeatable_field['label']  . '</label><p>';
 									echo the_field( $repeatable_field, $meta[$i][$repeatable_field['id']], array( $id, $i ) );
 									echo '</p>';
