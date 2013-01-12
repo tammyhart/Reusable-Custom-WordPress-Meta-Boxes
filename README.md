@@ -23,23 +23,27 @@ the data for the fields you want to use.
 
 ### Fields Included
 
-* Text Input
+* Text Input (types: text,tel, email, url, number)
 * Textarea
+* WYSIWYG Editor
 * Single checkbox
 * Select and [Chosen](http://harvesthq.github.com/chosen/) select with support for "multiple"
 * Radio group
 * Checkbox group
-* Taxonomy Select box
+* Taxonomy Select box and Checkboxes
 * Post select with support for "multiple" and [Chosen](http://harvesthq.github.com/chosen/)
+* Post Checkboxes
 * jQuery UI Date input
 * jQuery UI Slider
+* Farbtastic color chooser
+* Post Drag and Drop Sort
 * Image upload/select
 * File upload/select
-* Repeatable & Sortable area with ability to use any of the above mentioned fields
+* Sortable Repeatable area with ability to use any of the above mentioned fields (with caution and reason)
 
 ### Notes
 
-Not all fields are covered yet in the included example, and yes I know my documentation isn't that great. Contributions are welcome!!
+Not all fields are covered in the included example, but they are in the [Wiki](https://github.com/tammyhart/Reusable-Custom-WordPress-Meta-Boxes/wiki)
 
 
 Usage
@@ -49,7 +53,8 @@ These files are written from the perspecitve of being used in a theme.
 
 1. Add the metaboxes directory in your theme or plugin.
 2. Include metaboxes/meta_box.php in your functions.php.
-4. Use the class to create and add meta boxes to any post type (see Examples section below or inc/sample.php)
+4. Use the class to create and add meta boxes to any post type (see Examples section below or the [Wiki](https://github.com/tammyhart/Reusable-Custom-WordPress-Meta-Boxes/wiki)
+)
 
 
 Examples
