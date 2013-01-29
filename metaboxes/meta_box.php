@@ -12,7 +12,7 @@ define( 'CUSTOM_METABOXES_DIR', get_template_directory_uri() . '/metaboxes' );
  *
  * @return	string									html for the field
  */
-function the_field( $field, $meta = null, $repeatable = null ) {
+function custom_meta_box_field( $field, $meta = null, $repeatable = null ) {
 	if ( ! ( $field || is_array( $field ) ) )
 		return;
 	
@@ -245,7 +245,7 @@ function the_field( $field, $meta = null, $repeatable = null ) {
 									if ( ! array_key_exists( $repeatable_field['id'], $meta[$i] ) )
 										$meta[$i][$repeatable_field['id']] = null;
 									echo '<label>' . $repeatable_field['label']  . '</label><p>';
-									echo the_field( $repeatable_field, $meta[$i][$repeatable_field['id']], array( $id, $i ) );
+									echo custom_meta_box_field( $repeatable_field, $meta[$i][$repeatable_field['id']], array( $id, $i ) );
 									echo '</p>';
 								} // end each field
 								echo '</td><td><a class="meta_box_repeatable_remove" href="#"></a></td></tr>';
@@ -546,7 +546,7 @@ class Custom_Add_Meta_Box {
 						<td>';
 						
 						$meta = get_post_meta( get_the_ID(), $field['id'], true);
-						echo the_field( $field, $meta );
+						echo custom_meta_box_field( $field, $meta );
 						
 				echo     '<td>
 					</tr>';
