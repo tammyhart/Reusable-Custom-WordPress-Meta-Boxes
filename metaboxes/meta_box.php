@@ -23,6 +23,7 @@ function custom_meta_box_field( $field, $meta = null, $repeatable = null ) {
 	$place = isset( $field['place'] ) ? $field['place'] : null;
 	$size = isset( $field['size'] ) ? $field['size'] : null;
 	$options = isset( $field['options'] ) ? $field['options'] : null;
+	$settings = isset( $field['settings'] ) ? $field['settings'] : null;
 	$repeatable_fields = isset( $field['repeatable_fields'] ) ? $field['repeatable_fields'] : null;
 	
 	// the id and name for each field
@@ -412,12 +413,11 @@ class Custom_Add_Meta_Box {
 	var $fields;
 	var $page;
 	
-    public function __construct( $id, $title, $fields, $page, $js ) {
+    public function __construct( $id, $title, $fields, $page ) {
 		$this->id = $id;
 		$this->title = $title;
 		$this->fields = $fields;
 		$this->page = $page;
-		$this->js = $js;
 		
 		if( ! is_array( $this->page ) )
 			$this->page = array( $this->page );
