@@ -108,6 +108,7 @@ function custom_meta_box_field( $field, $meta = null, $repeatable = null ) {
 						case 'post_select':
 						case 'post_list':
 						case 'post_chosen':
+						echo '<pre>'; print_r( $meta ); echo '</pre>';
 							echo '<select data-placeholder="Select One" name="' . esc_attr( $name ) . '[]" id="' . esc_attr( $id ) . '"' , $type == 'post_chosen' ? ' class="chosen"' : '' , isset( $multiple ) && $multiple == true ? ' multiple="multiple"' : '' , '>
 									<option value=""></option>'; // Select One
 							$posts = get_posts( array( 'post_type' => $post_type, 'posts_per_page' => -1, 'orderby' => 'name', 'order' => 'ASC' ) );
@@ -301,12 +302,11 @@ function meta_box_find_field_type( $needle, $haystack ) {
  *
  * @return	bool				whether or not the type is in the provided array
  */
-function meta_box_find_repeatable( $needle, $haystack ) {
+function meta_box_find_repeatable( $needle = 'repeatable', $haystack ) {
 	foreach ( $haystack as $h )
-		if ( isset( $h['type'] ) && $h['type'] == 'repeatable' )
+		if ( isset( $h['type'] ) && $h['type'] == $needle )
 			return true;
-		else
-			return false;
+	return false;
 }
 
 /**
