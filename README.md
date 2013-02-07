@@ -8,6 +8,12 @@ Contributors: [tammyhart](http://github.com/tammyhart)
 Original Tutorial Series: (http://wp.tutsplus.com/author/tammy/)
 
 
+Latest Update
+-------------
+
+Image and file upload buttons now use the new 3.5 media uploader!
+
+
 Description
 -----------
 
