@@ -168,10 +168,12 @@ function custom_meta_box_field( $field, $meta = null, $repeatable = null ) {
 									<option value="">Select One</option>'; // Select One
 							$terms = get_terms( $id, 'get=all' );
 							$post_terms = wp_get_object_terms( get_the_ID(), $id );
-							$selected= $post_terms ? $terms[0]->slug : null;
-							foreach ( $terms as $term )
-								echo '<option value="' . $term->slug . '"' . selected( $selected, $term->slug, false ) . '>' . $term->name . '</option>'; 
-							$taxonomy = get_taxonomy( $id );
+               				$taxonomy = get_taxonomy( $id );
+               				$selected = $post_terms ? $taxonomy->hierarchical ? $post_terms[0]->term_id : $post_terms[0]->slug : null;
+							foreach ( $terms as $term ) {
+								$term_value = $taxonomy->hierarchical ? $term->term_id : $term->slug;
+								echo '<option value="' . $term_value . '"' . selected( $selected, $term_value, false ) . '>' . $term->name . '</option>'; 
+							}
 							echo '</select> &nbsp;<span class="description"><a href="'.get_bloginfo( 'url' ) . '/wp-admin/edit-tags.php?taxonomy=' . $id . '">Manage ' . $taxonomy->label . '</a></span>
 								<br />' . $desc;
 						break;
@@ -179,10 +181,12 @@ function custom_meta_box_field( $field, $meta = null, $repeatable = null ) {
 						case 'tax_checkboxes':
 							$terms = get_terms( $id, 'get=all' );
 							$post_terms = wp_get_object_terms( get_the_ID(), $id );
-							$checked = $post_terms ? $terms[0]->slug : null;
-							foreach ( $terms as $term)
-								echo '<input type="checkbox" value="' . $term->slug . '" name="' . $id . '[]" id="' . $term->slug . '"' . checked( $checked, $term->slug, false ) . ' /> <label for="' . $term->slug . '">' . $term->name . '</label><br />';
-							$taxonomy = get_taxonomy( $id);
+               				$taxonomy = get_taxonomy( $id );
+               				$checked = $post_terms ? $taxonomy->hierarchical ? $post_terms[0]->term_id : $post_terms[0]->slug : null;
+							foreach ( $terms as $term ) {
+								$term_value = $taxonomy->hierarchical ? $term->term_id : $term->slug;
+								echo '<input type="checkbox" value="' . $term_value . '" name="' . $id . '[]" id="term-' . $term_value . '"' . checked( $checked, $term_value, false ) . ' /> <label for="term-' . $term_value . '">' . $term->name . '</label><br />';
+							}
 							echo '<span class="description">' . $field['desc'] . ' <a href="'.get_bloginfo( 'url' ) . '/wp-admin/edit-tags.php?taxonomy=' . $id . '&post_type=' . $page . '">Manage ' . $taxonomy->label . '</a></span>';
 						break;
 						// date
@@ -582,9 +586,10 @@ class Custom_Add_Meta_Box {
 			}
 			if( in_array( $field['type'], array( 'tax_select', 'tax_checkboxes' ) ) ) {
 				// save taxonomies
-				if ( isset( $_POST[$field['id']] ) )
+				if ( isset( $_POST[$field['id']] ) ) {
 					$term = $_POST[$field['id']];
-				wp_set_object_terms( $post_id, $term, $field['id'] );
+					wp_set_object_terms( $post_id, $term, $field['id'] );
+				}
 			}
 			else {
 				// save the rest
