@@ -2,8 +2,8 @@ jQuery(function($) {
 	
 	// the upload image button, saves the id and outputs a preview of the image
 	var imageFrame;
-	$('.meta_box_upload_image_button').click(function(e) {
-		e.preventDefault();
+	$('.meta_box_upload_image_button').click(function(event) {
+		event.preventDefault();
 		
 		var options, attachment;
 		
