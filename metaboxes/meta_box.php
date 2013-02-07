@@ -108,7 +108,6 @@ function custom_meta_box_field( $field, $meta = null, $repeatable = null ) {
 						case 'post_select':
 						case 'post_list':
 						case 'post_chosen':
-						echo '<pre>'; print_r( $meta ); echo '</pre>';
 							echo '<select data-placeholder="Select One" name="' . esc_attr( $name ) . '[]" id="' . esc_attr( $id ) . '"' , $type == 'post_chosen' ? ' class="chosen"' : '' , isset( $multiple ) && $multiple == true ? ' multiple="multiple"' : '' , '>
 									<option value=""></option>'; // Select One
 							$posts = get_posts( array( 'post_type' => $post_type, 'posts_per_page' => -1, 'orderby' => 'name', 'order' => 'ASC' ) );
@@ -219,7 +218,7 @@ function custom_meta_box_field( $field, $meta = null, $repeatable = null ) {
 							echo	'<input name="' . esc_attr( $name ) . '" type="hidden" class="meta_box_upload_file" value="' . esc_url( $meta ) . '" />
 										<span class="' . $iconClass . '"></span>
 										<span class="meta_box_filename">' . esc_url( $meta ) . '</span>
-											<input class="meta_box_upload_file_button button" type="button" rel="' . get_the_ID() . '" value="Choose File" />
+											<a href="#" class="meta_box_upload_image_button button" rel="' . get_the_ID() . '">Choose File</a>
 											<small>&nbsp;<a href="#" class="meta_box_clear_file_button">Remove File</a></small>
 											<br clear="all" />' . $desc;
 						break;
