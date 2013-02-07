@@ -204,7 +204,7 @@ function custom_meta_box_field( $field, $meta = null, $repeatable = null ) {
 		// image
 		case 'image':
 			$image = CUSTOM_METABOXES_DIR . '/images/image.png';	
-			echo '<span class="meta_box_default_image" style="display:none">' . $image . '</span>';
+			echo '<div class="meta_box_image"><span class="meta_box_default_image" style="display:none">' . $image . '</span>';
 			if ( $meta ) {
 				$image = wp_get_attachment_image_src( intval( $meta ), 'medium' );
 				$image = $image[0];
@@ -212,18 +212,18 @@ function custom_meta_box_field( $field, $meta = null, $repeatable = null ) {
 			echo	'<input name="' . esc_attr( $name ) . '" type="hidden" class="meta_box_upload_image" value="' . intval( $meta ) . '" />
 						<img src="' . esc_attr( $image ) . '" class="meta_box_preview_image" alt="" />
 							<a href="#" class="meta_box_upload_image_button button" rel="' . get_the_ID() . '">Choose Image</a>
-							<small>&nbsp;<a href="#" class="meta_box_clear_image_button">Remove Image</a></small>
+							<small>&nbsp;<a href="#" class="meta_box_clear_image_button">Remove Image</a></small></div>
 							<br clear="all" />' . $desc;
 		break;
 		// file
 		case 'file':		
 			$iconClass = 'meta_box_file';
 			if ( $meta ) $iconClass .= ' checked';
-			echo	'<input name="' . esc_attr( $name ) . '" type="hidden" class="meta_box_upload_file" value="' . esc_url( $meta ) . '" />
+			echo	'<div class="meta_box_file_stuff"><input name="' . esc_attr( $name ) . '" type="hidden" class="meta_box_upload_file" value="' . esc_url( $meta ) . '" />
 						<span class="' . $iconClass . '"></span>
 						<span class="meta_box_filename">' . esc_url( $meta ) . '</span>
 							<a href="#" class="meta_box_upload_image_button button" rel="' . get_the_ID() . '">Choose File</a>
-							<small>&nbsp;<a href="#" class="meta_box_clear_file_button">Remove File</a></small>
+							<small>&nbsp;<a href="#" class="meta_box_clear_file_button">Remove File</a></small></div>
 							<br clear="all" />' . $desc;
 		break;
 		// repeatable
