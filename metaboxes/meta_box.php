@@ -593,18 +593,19 @@ class Custom_Add_Meta_Box {
 			}
 			else {
 				// save the rest
+				$new = false;
 				$old = get_post_meta( $post_id, $field['id'], true );
 				if ( isset( $_POST[$field['id']] ) )
 					$new = $_POST[$field['id']];
-				if ( isset( $new ) && $new != $old ) {
+				if ( isset( $new ) && '' == $new && $old ) {
+					delete_post_meta( $post_id, $field['id'], $old );
+				} elseif ( isset( $new ) && $new != $old ) {
 					$sanitizer = isset( $field['sanitizer'] ) ? $field['sanitizer'] : 'sanitize_text_field';
 					if ( is_array( $new ) )
 						$new = meta_box_array_map_r( 'meta_box_sanitize', $new, $sanitizer );
 					else
 						$new = meta_box_sanitize( $new, $sanitizer );
 					update_post_meta( $post_id, $field['id'], $new );
-				} elseif ( isset( $new ) && '' == $new && $old ) {
-					delete_post_meta( $post_id, $field['id'], $old );
 				}
 			}
 		} // end foreach
