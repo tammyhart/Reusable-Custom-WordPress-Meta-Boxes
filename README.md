@@ -1,7 +1,7 @@
 Reusable Custom WordPress Meta Boxes
 ====================================
 
-Version: 0.4
+### No longer supported - please fork to continue development on your own.
 
 Contributors: [tammyhart](http://github.com/tammyhart)
 
